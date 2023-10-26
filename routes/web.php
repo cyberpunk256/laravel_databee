@@ -15,6 +15,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\IndexController;
 use App\Http\Controllers\UserController;
 
 /*
@@ -76,6 +77,9 @@ Route::middleware('auth')->group(function () {
                 ->name('logout');
 
     
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('/user', UserController::class)->except(['show']);
+
+    Route::get('/', [IndexController::class, 'index'])->name('index');
+
 });

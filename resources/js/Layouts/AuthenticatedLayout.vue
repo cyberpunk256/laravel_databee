@@ -34,6 +34,10 @@ import md5 from 'crypto-js/md5'
 import { useToast } from 'vue-toastification'
 
 export default {
+  methods: {
+  },
+  methods: {
+  },
   props: {
   },
   data() {
