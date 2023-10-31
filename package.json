@@ -29,6 +29,9 @@
     "dependencies": {
         "crypto-js": "^4.1.1",
         "leaflet-gpx": "^1.7.0",
+        "panolens": "^0.12.1",
+        "three": "^0.158.0",
+        "video.js": "^8.6.1",
         "vue-toastification": "^2.0.0-rc.5"
     }
 }

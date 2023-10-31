@@ -1,5 +1,6 @@
 <template>
   <v-app class="bg-grey-lighten-4">
+    <!-- <three-video-player/> -->
     <div id="map" class="m_map"></div>
     <v-dialog
       v-model="modal"
@@ -22,8 +23,10 @@
 <script>
 import L from 'leaflet';
 import 'leaflet-gpx';
+import ThreeVideoPlayer from '@/Components/ThreeVideoPlayer.vue';
 
 export default {
+  components: { ThreeVideoPlayer },
   props: {
   },
   data() {
@@ -58,19 +61,19 @@ export default {
     };
   },
   mounted() {
-    const self = this
-    self.map = L.map('map').setView(this.view,6);
-    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
-    }).addTo(self.map)
-    for (let i = 0; i < self.gpxs.length; i++) {
-      const item = self.gpxs[i];
-      new L.GPX(item.url, this.gpxOptions)
-        .on('loaded', self.onLoaded)
-        .on('click', function() {
-          self.onShowModal(item)
-        });
-    }
+    // const self = this
+    // self.map = L.map('map').setView(this.view,6);
+    // L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //   attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
+    // }).addTo(self.map)
+    // for (let i = 0; i < self.gpxs.length; i++) {
+    //   const item = self.gpxs[i];
+    //   new L.GPX(item.url, this.gpxOptions)
+    //     .on('loaded', self.onLoaded)
+    //     .on('click', function() {
+    //       self.onShowModal(item)
+    //     });
+    // }
   },
   methods: {
     onLoaded(e) {
