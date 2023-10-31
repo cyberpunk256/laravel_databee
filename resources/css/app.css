@@ -1,0 +1,11 @@
+.m_map {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+.p_video {
+    width: 500px;
+    max-width: 100%;
+}
