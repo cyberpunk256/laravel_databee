@@ -1,5 +1,5 @@
 <script setup>
-import NavigationMenu from '@/Components/NavigationMenu.vue'
+import AdminNavigationMenu from '@/Components/AdminNavigationMenu.vue'
 </script>
 
 <template>
@@ -9,13 +9,13 @@ import NavigationMenu from '@/Components/NavigationMenu.vue'
         <v-list-item
           href="/"
           :prepend-avatar="avatar"
-          :title="$page.props.auth.user.name"
-          :subtitle="$page.props.auth.user.email"
+          :title="user.name"
+          :subtitle="user.email"
           link
         />
       </v-list>
       <v-divider />
-      <NavigationMenu />
+      <AdminNavigationMenu />
     </v-navigation-drawer>
     <v-app-bar color="primary">
       <v-app-bar-nav-icon v-if="$vuetify.display.mobile" @click.stop="drawer = !drawer" />
@@ -30,8 +30,6 @@ import NavigationMenu from '@/Components/NavigationMenu.vue'
 </template>
 
 <script>
-import md5 from 'crypto-js/md5'
-import { useToast } from 'vue-toastification'
 
 export default {
   methods: {
@@ -48,23 +46,11 @@ export default {
   },
   computed: {
     avatar() {
-      return `https://www.gravatar.com/avatar/${md5(this.$page.props.auth.user.email)}?s=200`
-    },
-  },
-  watch: {
-    $page: {
-      handler() {
-        const toast = useToast()
-        const flash = this.$page.props.flash
-        if (flash.success) {
-          toast.success(flash.success)
-        } else if (flash.error) {
-          toast.error(flash.error)
-        }
-      },
+      return `https://www.gravatar.com/avatar`
     },
   },
   mounted() {
+    console.log('this.$page.props', this.$page.props)
     this.drawer = !this.$vuetify.display.mobile
   },
 }

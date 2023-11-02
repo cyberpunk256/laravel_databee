@@ -43,13 +43,6 @@ export default {
 
       // Get a reference to the video element
       this.video = panorama.getVideoElement();
-      this.panorama = panorama
-      this.video.addEventListener("loadedmetadata", (event) => {
-        console.log(
-          "The duration and dimensions of the media and tracks are now known.",
-        );
-      });
-
     },
     togglePlay() {
       if (this.isPlaying) {
@@ -72,9 +65,9 @@ export default {
       const fullWidth = boundingRect.width;
       const percent = (clickX / fullWidth) * 100;
       this.progress = percent;
-      console.log('video.duration', video.duration);
-      const time = parseInt((percent / 100) * video.duration);
-      video.currentTime += 10;
+      console.log('video.duration', this.video.duration);
+      const time = parseInt((percent / 100) * this.video.duration);
+      this.video.currentTime += 10;
       console.log('time', video.currentTime);
     },
   },

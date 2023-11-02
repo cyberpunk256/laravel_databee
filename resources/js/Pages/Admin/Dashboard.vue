@@ -1,11 +1,11 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Breadcrumbs from '@/Components/Breadcrumbs.vue'
 import { Head } from '@inertiajs/vue3'
 </script>
 
 <template>
-  <AuthenticatedLayout>
+  <AdminLayout>
     <div class="mb-5">
       <h5 class="text-h5 font-weight-bold">ダッシュボード</h5>
       <Breadcrumbs :items="breadcrumbs" class="pa-0 mt-1" />
@@ -15,7 +15,7 @@ import { Head } from '@inertiajs/vue3'
         <div class="text-h6 text-medium-emphasis">{{ $page.props.auth.user.name }}さんがログインしました。</div>
       </v-card-text>
     </v-card>
-  </AuthenticatedLayout>
+  </AdminLayout>
 </template>
 
 <script>

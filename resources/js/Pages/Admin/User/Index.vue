@@ -1,11 +1,11 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Breadcrumbs from '@/Components/Breadcrumbs.vue'
 import { Head, Link } from '@inertiajs/vue3'
 </script>
 
 <template>
-  <AuthenticatedLayout>
+  <AdminLayout>
     <div class="mb-5">
       <h5 class="text-h5 font-weight-bold">ユーザー一覧</h5>
     </div>
@@ -55,7 +55,7 @@ import { Head, Link } from '@inertiajs/vue3'
         </v-card>
       </v-dialog>
     </v-row>
-  </AuthenticatedLayout>
+  </AdminLayout>
 </template>
 
 <script>

@@ -4,9 +4,8 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use Illuminate\Support\Facades\Auth;
 
-class HandleInertiaRequests extends Middleware
+class AdminHandleInertiaRequests extends Middleware
 {
     /**
      * The root template that is loaded on the first page visit.
@@ -32,7 +31,7 @@ class HandleInertiaRequests extends Middleware
     {
         return array_merge(parent::share($request), [
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user('admin'),
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

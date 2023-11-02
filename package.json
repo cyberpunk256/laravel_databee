@@ -10,7 +10,7 @@
     "devDependencies": {
         "@inertiajs/vue3": "^1.0.0",
         "@mdi/font": "^7.2.96",
-        "@vitejs/plugin-vue": "^4.0.0",
+        "@vitejs/plugin-vue": "^4.4.0",
         "axios": "^1.1.2",
         "esbuild": "^0.18.11",
         "eslint": "^8.44.0",
@@ -23,15 +23,14 @@
         "vite": "^4.0.0",
         "vite-plugin-eslint": "^1.8.1",
         "vite-plugin-vuetify": "^1.0.2",
-        "vue": "^3.2.41",
+        "vue": "^3.2.36",
         "vuetify": "^3.3.6"
     },
     "dependencies": {
-        "crypto-js": "^4.1.1",
         "leaflet-gpx": "^1.7.0",
         "panolens": "^0.12.1",
         "three": "^0.158.0",
-        "video.js": "^8.6.1",
+        "vue-loader": "^17.3.1",
         "vue-toastification": "^2.0.0-rc.5"
     }
 }

@@ -1,13 +1,13 @@
 import './bootstrap'
 import '../css/app.css'
 import "leaflet/dist/leaflet.css";
-import "video.js/dist/video-js.css";
 
 import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import vuetify from './Plugins/vuetify'
 import toast from './Plugins/toast'
+import mixin from './Plugins/mixin'
 
 const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Laravel'
 
@@ -19,6 +19,7 @@ createInertiaApp({
       .use(plugin)
       .use(vuetify)
       .use(toast)
+      .mixin(mixin)
       .mount(el)
   },
   progress: {

@@ -1,12 +1,12 @@
 <script setup>
 import { Link } from '@inertiajs/vue3'
-import navigation from '@/Configs/navigation'
+import AdminMenu from '@/Const/AdminMenu'
 </script>
 
 <template>
   <v-list nav>
     <!-- List Menu -->
-    <Link v-for="(item, key) in navigation.items" :key="key" :href="item.to" as="div">
+    <Link v-for="(item, key) in AdminMenu.items" :key="key" :href="item.to" as="div">
       <v-list-item
         :prepend-icon="item.icon"
         :title="item.title"
@@ -16,7 +16,7 @@ import navigation from '@/Configs/navigation'
       />
     </Link>
     <!-- ログアウト -->
-    <Link href="/logout" method="post" as="div">
+    <Link href="/admin/logout" method="post" as="div">
       <v-list-item prepend-icon="mdi-exit-to-app" title="ログアウト" link />
     </Link>
   </v-list>

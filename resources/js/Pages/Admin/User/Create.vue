@@ -1,5 +1,5 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Breadcrumbs from '@/Components/Breadcrumbs.vue'
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 const form = useForm({
@@ -21,7 +21,7 @@ const submit = () => {
 </script>
 
 <template>
-  <AuthenticatedLayout>
+  <AdminLayout>
     <div class="mb-5">
       <h5 class="text-h5 font-weight-bold">ユーザー新規登録</h5>
       <Breadcrumbs :items="breadcrumbs" class="pa-0 mt-1" />
@@ -90,7 +90,7 @@ const submit = () => {
         </v-card-actions>
       </v-form>
     </v-card>
-  </AuthenticatedLayout>
+  </AdminLayout>
 </template>
 
 <script>

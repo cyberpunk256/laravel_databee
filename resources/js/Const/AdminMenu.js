@@ -3,7 +3,7 @@ export default {
     {
       title: 'ユーザー一覧',
       icon: 'mdi-account-group',
-      to: '/user',
+      to: '/admin/user',
     },
   ],
 }
