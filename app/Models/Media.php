@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes; 
 
 class Media extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'medias';   
 
@@ -15,13 +16,19 @@ class Media extends Model
         'admin_id',
         'name',
         'type',
-        'length',
+        'video_time',
         'url',
         'gpx_url',
+        'image_lat',
+        'image_long',
+        'deleted_at'
     ];  
 
-    public function Admin() {
+    public function admin() {
         return $this->belongsTo(Admin::class);
     }
 
+    public function captures() {
+        return $this->hasMany(Capture::class);
+    }
 }

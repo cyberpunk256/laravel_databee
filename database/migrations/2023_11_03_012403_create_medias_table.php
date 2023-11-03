@@ -17,11 +17,12 @@ return new class extends Migration
             $table->foreign('admin_id')->references('id')->on('admins')->onDelete('cascade');
 
             $table->string('name')->nullable(); 
-            $table->tinyInteger('type')->default(1)->('種別'); // config/const.php 3DMovie
-            $table->bigInteger('length')->nullable()->comment('second'); 
+            $table->tinyInteger('type')->default(1)->comment('種別'); // config/const.php 3DMovie
+            $table->double('video_time', 10, 2)->nullable()->comment('second'); 
             $table->string('url')->nullable(); 
             $table->string('gpx_url')->nullable(); 
-
+            $table->double('image_lat', 11, 8)->nullable();
+            $table->double('image_long', 11, 8)->nullable();
 
             $table->timestamps();
             $table->softDeletes();

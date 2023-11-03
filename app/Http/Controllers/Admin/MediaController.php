@@ -7,6 +7,7 @@ use Inertia\Inertia;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
+use App\Http\Requests\Admin\MediaUpdateRequest;
 
 class MediaController extends Controller
 {
@@ -28,5 +29,25 @@ class MediaController extends Controller
     public function create()
     {
         return Inertia::render('Admin/Media/Create');
+    }
+
+    public function store(MediaUpdateRequest $request)
+    {
+        $data = $request->only([
+            'name', 
+            'type', 
+            'url', 
+            'gpx_url', 
+            'length', 
+            'image_lat', 
+            'image_long'
+        ]);
+
+        $media = Media::create($data)->delete();
+
+        return back()->with([
+            'success' => true,
+            "data" => $media
+        );
     }
 }

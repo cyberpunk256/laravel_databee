@@ -15,7 +15,7 @@ class S3Controller extends Controller
             $folder = $request->input('folder'); // ファイル名を取得する
     
             $s3 = Storage::disk('s3');
-            $client = $s3->getDriver()->getAdapter()->getClient();
+            $client = $s3->getClient();
     
             $cmd = $client->getCommand('PutObject', [
                 'Bucket' => config('filesystems.disks.s3.bucket'),

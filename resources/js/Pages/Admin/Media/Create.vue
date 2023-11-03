@@ -23,7 +23,7 @@ const breadcrumbs = ref([
       <h5 class="text-h5 font-weight-bold">メディア新規登録</h5>
       <Breadcrumbs :items="breadcrumbs" class="pa-0 mt-1" />
     </div>
-    <v-card>
+    <v-card v-if="tab == 'form'">
       <v-card-text>
         <v-text-field v-model="form.name" label="メディア名" variant="underlined" :error-messages="form.errors.name" />
         <v-select
@@ -31,31 +31,36 @@ const breadcrumbs = ref([
           :items="enums.media_types"
           item-title="text"
           item-value="value"
-          label="タイプ"
+          label="メディア種別"
           variant="underlined"
           :error-messages="form.errors.type"
         />
-        <v-text-field v-model="form.name" label="名前" variant="underlined" :error-messages="form.errors.name" />
         <S3FileUpload 
           @success="onFileUpload('url')"
           :error="form.errors.url"
-          label="動画ファイルをアップロードしてください。"
+          label="メディアファイルをアップロードしてください。"
           folder="media"
           class="mt-2"/>
         <S3FileUpload 
+          v-if="form.type == 1"
           @success="onFileUpload('gpx_url')"
           :error="form.errors.gpx_url"
           label="GPXファイルをアップロードしてください。"
           folder="gpx"
           class="mt-2"/>
       </v-card-text>
+      <v-divider class="mt-12"></v-divider>
       <v-card-actions>
-        <v-spacer />
+        <v-spacer></v-spacer>
         <Link href="/admin/user" as="div">
           <v-btn text>キャンセル</v-btn>
         </Link>
-        <v-btn @click="submit" color="primary">登録</v-btn>
+        <v-btn type="submit" color="primary">プレビュー</v-btn>
+        <v-spacer></v-spacer>
       </v-card-actions>
+    </v-card>
+    <v-card v-if="tab == 'map'">
+
     </v-card>
   </AdminLayout>
 </template>
@@ -67,6 +72,7 @@ export default {
   },
   data() {
     return {
+      tab: 'form',
       form: useForm({
         name: null,
         email: null,

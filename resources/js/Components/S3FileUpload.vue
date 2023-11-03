@@ -1,8 +1,8 @@
 <template>
   <div class="dropzon_wrap">
-    <form ref="dropzone" class="dropzone needsclick">
+    <div ref="dropzone" class="dropzone needsclick">
       <div class="dz-message needsclick">{{ label }}</div>
-    </form>
+    </div>
     
     <div class="preview-template" style="display: none;">
       <div class="dz-preview dz-file-preview">
@@ -37,12 +37,12 @@
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script>
 import Dropzone from "dropzone";
-import { Head, Link, useForm, router } from '@inertiajs/vue3'
 
 export default {
   props: {
@@ -52,9 +52,6 @@ export default {
   data() {
     return {
       action_url: null,
-      form: useForm({
-        folder: this.folder
-      }),
     }
   },
   mounted() {
@@ -64,7 +61,9 @@ export default {
   methods: {
     init_fetch() {
       const self = this
-      this.form.post('/admin/s3/designed_url', {
+      this.$inertia.post('/admin/s3/designed_url', {
+        folder: this.folder
+      }, {
         onSuccess: () => {
           console.log('self.flash', self.flash);
           if(self.flash.success) {
@@ -90,7 +89,7 @@ export default {
         thumbnailHeight: 120,
         thumbnailWidth: 120,
         maxFilesize: 100 * 1024 * 1024,
-        filesizeBase: 1000,
+        maxFiles: 1,
         thumbnail: function(file, dataUrl) {
           if (file.previewElement) {
             file.previewElement.classList.remove("dz-file-preview");
@@ -105,36 +104,52 @@ export default {
         }
         
       })
-      dropzone.uploadFiles = function(files) {
-        const self = this;
-        for (let i = 0; i < files.length; i++) {
-
-          const file = files[i];
-          const totalSteps = Math.round(Math.min(maxSteps, Math.max(minSteps, file.size / bytesPerStep)));
-
-          for (let step = 0; step < totalSteps; step++) {
-            const duration = timeBetweenSteps * (step + 1);
-            setTimeout(function(file, totalSteps, step) {
-              return function() {
-                file.upload = {
-                  progress: 100 * (step + 1) / totalSteps,
-                  total: file.size,
-                  bytesSent: (step + 1) * file.size / totalSteps
-                };
-
-                self.emit('uploadprogress', file, file.upload.progress, file.upload.bytesSent);
-                if (file.upload.progress == 100) {
-                  file.status = Dropzone.SUCCESS;
-                  self.emit("success", file, 'success', null);
-                  self.emit("complete", file);
-                  self.processQueue();
-                  //document.getElementsByClassName("dz-success-mark").style.opacity = "1";
-                }
-              };
-            }(file, totalSteps, step), duration);
-          }
+      dropzone.on("addedfile", function(file) {
+        if (this.files.length > 1) {
+          this.removeFile(this.files[0]);
         }
-      }
+      });
+
+      dropzone.on("success", function (file, response) {
+        console.log('file', file);
+        console.log('response', response);
+          // response = JSON.parse(response);
+          // file.nominationId = response.nominationId;
+          // file.id = response.id;
+          // file.media = response.media;
+          // file.viewLink = response.viewLink;
+      });
+
+      // dropzone.uploadFiles = function(files) {
+      //   const self = this;
+      //   for (let i = 0; i < files.length; i++) {
+
+      //     const file = files[i];
+      //     const totalSteps = Math.round(Math.min(maxSteps, Math.max(minSteps, file.size / bytesPerStep)));
+
+      //     for (let step = 0; step < totalSteps; step++) {
+      //       const duration = timeBetweenSteps * (step + 1);
+      //       setTimeout(function(file, totalSteps, step) {
+      //         return function() {
+      //           file.upload = {
+      //             progress: 100 * (step + 1) / totalSteps,
+      //             total: file.size,
+      //             bytesSent: (step + 1) * file.size / totalSteps
+      //           };
+
+      //           self.emit('uploadprogress', file, file.upload.progress, file.upload.bytesSent);
+      //           if (file.upload.progress == 100) {
+      //             file.status = Dropzone.SUCCESS;
+      //             self.emit("success", file, 'success', null);
+      //             self.emit("complete", file);
+      //             self.processQueue();
+      //             //document.getElementsByClassName("dz-success-mark").style.opacity = "1";
+      //           }
+      //         };
+      //       }(file, totalSteps, step), duration);
+      //     }
+      //   }
+      // }
     }
   }
 };
