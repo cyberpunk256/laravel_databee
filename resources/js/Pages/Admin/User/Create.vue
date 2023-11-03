@@ -12,9 +12,9 @@ const form = useForm({
 })
 
 const submit = () => {
-  form.post('/admin/media', {
+  form.post('/admin/user', {
     onSuccess: () => {
-      router.visit('/admin/media')
+      router.visit('/admin/user')
     },
   })
 }
@@ -33,11 +33,57 @@ const submit = () => {
             <v-col cols="12" sm="12" md="6">
               <v-text-field v-model="form.name" label="名前" variant="underlined" :error-messages="form.errors.name" />
             </v-col>
+            <v-col cols="12" sm="12" md="6">
+              <v-select
+                v-model="form.gender"
+                :items="genders"
+                item-title="text"
+                item-value="value"
+                label="性別"
+                variant="underlined"
+                :error-messages="form.errors.gender"
+              />
+            </v-col>
+            <v-col cols="12" sm="12" md="6">
+              <v-text-field
+                v-model="form.email"
+                label="メールアドレス"
+                variant="underlined"
+                type="email"
+                :error-messages="form.errors.email"
+              />
+            </v-col>
+            <v-col cols="12" sm="12" md="6">
+              <v-text-field
+                v-model="form.password"
+                label="パースワード"
+                variant="underlined"
+                type="password"
+                :error-messages="form.errors.password"
+              />
+            </v-col>
+            <v-col cols="12" sm="12" md="6">
+              <v-text-field
+                v-model="form.phone"
+                label="電話番号"
+                variant="underlined"
+                type="tel"
+                :error-messages="form.errors.phone"
+              />
+            </v-col>
+            <v-col cols="12" sm="12" md="6">
+              <v-text-field
+                v-model="form.address"
+                label="住所"
+                variant="underlined"
+                :error-messages="form.errors.address"
+              />
+            </v-col>
           </v-row>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <Link href="/admin/media" as="div">
+          <Link href="/admin/user" as="div">
             <v-btn text>キャンセル</v-btn>
           </Link>
           <v-btn type="submit" color="primary">登録</v-btn>
@@ -51,6 +97,7 @@ const submit = () => {
 export default {
   methods: {
   },
+  name: 'UserCreate',
   data() {
     return {
       genders: [
@@ -59,9 +106,9 @@ export default {
       ],
       breadcrumbs: [
         {
-          title: 'メディア一覧',
+          title: 'ユーザー一覧',
           disabled: false,
-          href: '/admin/media',
+          href: '/admin/user',
         },
         {
           title: '新規登録',

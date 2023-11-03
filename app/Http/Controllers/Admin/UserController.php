@@ -40,7 +40,7 @@ class UserController extends Controller
         $user = User::create($data);
         $message = sprintf('Successfully created %s', $user->name);
 
-        return redirect()->back()->with('success', $message);
+        return back()->with('success', $message);
     }
 
     public function edit(User $user)
@@ -61,13 +61,13 @@ class UserController extends Controller
         }
         $user->update($data);
 
-        return redirect()->back()->with('success', __('success_update'));
+        return back()->with('success', __('success_update'));
     }
 
     public function destroy(User $user)
     {
         $user->delete();
 
-        return redirect()->back()->with('success', __('success_delete'));
+        return back()->with('success', __('success_delete'));
     }
 }

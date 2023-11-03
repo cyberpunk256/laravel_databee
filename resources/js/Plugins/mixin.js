@@ -8,6 +8,9 @@ export default {
         user() {
             return this.$page.props.auth.user
         },
+        enums() {
+            return this.$page.props.enums
+        },
         flash() {
             return this.$page.props.flash
         },
@@ -19,6 +22,8 @@ export default {
                 toast.success(this.flash.success, { timeout: 1000 });
             } else if (this.flash.error) {
                 toast.error(this.flash.error, { timeout: 1000 });
+            } else {
+                toast.error("エラーが発生しました。", { timeout: 1000 });
             }
         },
     }

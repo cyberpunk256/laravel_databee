@@ -27,6 +27,8 @@ const submit = () => {
 </script>
 <script>
 export default {
+  props: {
+  },
   name: 'LoginPage',
 }
 </script>

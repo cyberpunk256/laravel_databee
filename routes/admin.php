@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\S3Controller;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,4 +32,5 @@ Route::middleware('auth.admin')->group(function () {
     Route::post('/logout', [DashboardController::class, 'destroy'])->name('logout');
     Route::resource('/user', UserController::class)->except(['show']);
     Route::resource('/media', MediaController::class)->except(['show']);
+    Route::post('/s3/designed_url', [S3Controller::class, 'getPresignedUrl'])->name('s3.designed_url');
 });

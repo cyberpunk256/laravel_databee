@@ -29,6 +29,7 @@ class AdminHandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $enums = config('values.enums');
         return array_merge(parent::share($request), [
             'auth' => [
                 'user' => $request->user('admin'),
@@ -37,6 +38,7 @@ class AdminHandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            'enums' => $enums
         ]);
     }
 }
