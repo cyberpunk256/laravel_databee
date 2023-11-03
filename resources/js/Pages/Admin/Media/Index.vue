@@ -7,7 +7,7 @@ import { Head, Link } from '@inertiajs/vue3'
 <template>
   <AdminLayout>
     <div class="mb-5">
-      <h5 class="text-h5 font-weight-bold">ユーザー一覧</h5>
+      <h5 class="text-h5 font-weight-bold">メディア一覧</h5>
     </div>
     <v-card class="pa-4">
       <div class="d-flex flex-wrap align-center">
@@ -21,7 +21,7 @@ import { Head, Link } from '@inertiajs/vue3'
           single-line
         />
         <v-spacer />
-        <Link href="/admin/user/create" as="div">
+        <Link href="/admin/media/create" as="div">
           <v-btn color="primary">新規登録</v-btn>
         </Link>
       </div>
@@ -36,7 +36,7 @@ import { Head, Link } from '@inertiajs/vue3'
       >
         <template #[`item.gender`]="{ item }">{{ item.columns.gender == 'male' ? 'Male' : 'Female' }}</template>
         <template #[`item.action`]="{ item }">
-          <Link :href="`/admin/user/${item.value}/edit`" as="button">
+          <Link :href="`/admin/media/${item.value}/edit`" as="button">
             <v-icon color="warning" icon="mdi-pencil" size="small" />
           </Link>
           <v-icon class="ml-2" color="error" icon="mdi-delete" size="small" @click="deleteItem(item)" />
@@ -69,16 +69,16 @@ export default {
   data() {
     return {
       headers: [
-        { title: '名前', key: 'name' },
-        { title: '性別', key: 'gender' },
-        { title: 'メールアドレス', key: 'email' },
-        { title: '電話番号', key: 'phone' },
-        { title: '登録日付', key: 'created_at' },
-        { title: 'アクション', key: 'action', sortable: false },
+        { title: 'ID', key: 'id' },
+        { title: 'メディア名', key: 'name' },
+        { title: '投稿者', key: 'email' },
+        { title: '投稿日', key: 'updated_at' },
+        { title: '種別', key: 'type' },
+        { title: '有効', key: 'deleted_at', sortable: false },
       ],
       breadcrumbs: [
         {
-          title: 'ユーザー一覧',
+          title: 'メディア一覧',
           disabled: true,
         },
       ],
@@ -100,7 +100,7 @@ export default {
       if (search) {
         params.search = search
       }
-      this.$inertia.get('/admin/user', params, {
+      this.$inertia.get('/admin/media', params, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {
@@ -114,7 +114,7 @@ export default {
     },
     submitDelete() {
       this.isLoading = true
-      this.$inertia.delete(`/admin/user/${this.deleteId}`, {
+      this.$inertia.delete(`/admin/media/${this.deleteId}`, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {

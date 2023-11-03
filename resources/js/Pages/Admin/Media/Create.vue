@@ -1,6 +1,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Breadcrumbs from '@/Components/Breadcrumbs.vue'
+import S3FileUpload from '@/Components/S3FileUpload.vue'
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 const form = useForm({
   name: null,
@@ -12,9 +13,9 @@ const form = useForm({
 })
 
 const submit = () => {
-  form.post('/admin/media', {
+  form.post('/admin/user', {
     onSuccess: () => {
-      router.visit('/admin/media')
+      router.visit('/admin/user')
     },
   })
 }
@@ -23,21 +24,18 @@ const submit = () => {
 <template>
   <AdminLayout>
     <div class="mb-5">
-      <h5 class="text-h5 font-weight-bold">ユーザー新規登録</h5>
+      <h5 class="text-h5 font-weight-bold">メディア新規登録</h5>
       <Breadcrumbs :items="breadcrumbs" class="pa-0 mt-1" />
     </div>
     <v-card>
       <v-form @submit.prevent="submit">
         <v-card-text>
-          <v-row>
-            <v-col cols="12" sm="12" md="6">
-              <v-text-field v-model="form.name" label="名前" variant="underlined" :error-messages="form.errors.name" />
-            </v-col>
-          </v-row>
+          <v-text-field v-model="form.name" label="名前" variant="underlined" :error-messages="form.errors.name" />
+          <S3FileUpload/>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <Link href="/admin/media" as="div">
+          <Link href="/admin/user" as="div">
             <v-btn text>キャンセル</v-btn>
           </Link>
           <v-btn type="submit" color="primary">登録</v-btn>
@@ -49,6 +47,10 @@ const submit = () => {
 
 <script>
 export default {
+  props: {
+  },
+  props: {
+  },
   methods: {
   },
   data() {

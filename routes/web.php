@@ -76,7 +76,6 @@ Route::middleware('auth')->group(function () {
                 ->name('logout');
 
     
-    Route::resource('/user', UserController::class)->except(['show']);
 
     Route::get('/', [IndexController::class, 'index'])->name('index');
 

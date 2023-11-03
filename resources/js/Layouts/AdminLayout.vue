@@ -7,7 +7,7 @@ import AdminNavigationMenu from '@/Components/AdminNavigationMenu.vue'
     <v-navigation-drawer v-model="drawer" :rail="rail" permanent>
       <v-list>
         <v-list-item
-          href="/"
+          href="/admin"
           :prepend-avatar="avatar"
           :title="user.name"
           :subtitle="user.email"

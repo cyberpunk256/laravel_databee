@@ -11,12 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('media', function (Blueprint $table) {
+        Schema::create('medias', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('admin_id')->nullable()->unsigned()->comment('管理者ID');
             $table->foreign('admin_id')->references('id')->on('admins')->onDelete('cascade');
 
+            $table->string('name')->nullable(); 
+            $table->tinyInteger('type')->default(1)->('種別'); // config/const.php 3DMovie
+            $table->bigInteger('length')->nullable()->comment('second'); 
+            $table->string('url')->nullable(); 
+            $table->string('gpx_url')->nullable(); 
+
+
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -25,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('media');
+        Schema::dropIfExists('medias');
     }
 };

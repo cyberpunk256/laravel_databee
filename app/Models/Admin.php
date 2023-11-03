@@ -12,10 +12,15 @@ class Admin extends Authenticatable
     use HasFactory;
     use Notifiable;    
     protected $guard = 'admin';    
+
     protected $fillable = [
         'name', 'email', 'password'
     ];    
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function Medias() {
+        return $this->hasMany(Media::class);
+    }
 }

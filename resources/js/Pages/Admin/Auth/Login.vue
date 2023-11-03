@@ -45,17 +45,6 @@ export default {
         prepend-inner-icon="mdi-email-outline"
         :error-messages="form.errors.email"
       />
-      <div class="d-flex align-center justify-space-between">
-        <div class="text-subtitle-1 text-medium-emphasis">パースワード</div>
-        <Link
-          class="text-caption text-decoration-none text-blue"
-          href="/forgot-password"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          パスワードを忘れた方はこちら?</Link
-        >
-      </div>
       <v-text-field
         v-model="form.password"
         density="compact"
@@ -71,10 +60,5 @@ export default {
 
       <v-btn :loading="form.processing" type="submit" block color="primary" class="mb-12">ログイン</v-btn>
     </v-form>
-    <v-card-text class="text-center">
-      <Link class="text-blue text-decoration-none" href="/register">
-        アカウントをお持ちでない方は会員登録 <v-icon icon="mdi-chevron-right" />
-      </Link>
-    </v-card-text>
   </GuestLayout>
 </template>
