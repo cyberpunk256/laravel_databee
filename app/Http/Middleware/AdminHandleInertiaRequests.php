@@ -38,7 +38,8 @@ class AdminHandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
-            'enums' => $enums
+            'enums' => $enums,
+            'csrf_token' => csrf_token()
         ]);
     }
 }

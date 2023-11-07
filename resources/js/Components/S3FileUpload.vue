@@ -52,44 +52,45 @@ export default {
   data() {
     return {
       action_url: null,
+      // action_url: https://3d-videos-new.s3.ap-northeast-1.amazonaws.com//654a4bcd23085?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAWY3UZSKFESTL7VMH%2F20231107%2Fap-northeast-1%2Fs3%2Faws4_request&X-Amz-Date=20231107T143805Z&X-Amz-SignedHeaders=host&X-Amz-Expires=1200&X-Amz-Signature=8fc487f281010448a92e181272bce0d15fbd7537395f08b3659f61dc17998d32,
     }
   },
   mounted() {
-    this.init_fetch()
-    this.init_dropzone()
+    // this.init_fetch()
+    this.init_dropzone();
   },
   methods: {
-    init_fetch() {
+    async init_fetch() {
       const self = this
-      this.$inertia.post('/admin/s3/designed_url', {
-        folder: this.folder
-      }, {
-        onSuccess: () => {
-          console.log('self.flash', self.flash);
-          if(self.flash.success) {
-            self.action_url = self.flash.presigned_url
-            self.init_dropzone()
-          } else {
-            self.show_toast()
-          }
-        },
-        onError: () => {
+      try {
+        const { data } = await axios.post(`/admin/s3/designed_url`);
+        if(data.error) {
           self.show_toast()
-        },
-      })
+        } else {
+          self.action_url = data.presigned_url
+          self.init_dropzone()
+        }
+      } catch(e) {
+        console.log(e);
+        self.show_toast()
+      }
     },
     init_dropzone() {
+      const self = this
+      console.log('self.$page.props.csrf_token', self.$page.props.csrf_token)
       const minSteps = 6,
         maxSteps = 60,
         timeBetweenSteps = 100,
         bytesPerStep = 100000;
       const dropzone = new Dropzone(this.$refs.dropzone, {
-        url: "/",
+        // url: self.action_url,
+        url: "/admin/s3/upload",
         parallelUploads: 1,
         thumbnailHeight: 120,
         thumbnailWidth: 120,
-        maxFilesize: 100 * 1024 * 1024,
+        maxFilesize: 1024 * 1024 * 1024 * 10,
         maxFiles: 1,
+        chunkSize: 1024 * 1024 * 100,
         thumbnail: function(file, dataUrl) {
           if (file.previewElement) {
             file.previewElement.classList.remove("dz-file-preview");
@@ -101,8 +102,10 @@ export default {
             }
             setTimeout(function() { file.previewElement.classList.add("dz-image-preview"); }, 1);
           }
+        },
+        headers: {
+            'X-CSRF-TOKEN': self.$page.props.csrf_token
         }
-        
       })
       dropzone.on("addedfile", function(file) {
         if (this.files.length > 1) {
@@ -119,6 +122,14 @@ export default {
           // file.media = response.media;
           // file.viewLink = response.viewLink;
       });
+
+      dropzone.on("uploadprogress", function(file, progress, bytesSent) {
+        if (file.previewElement) {
+            var progressElement = file.previewElement.querySelector("[data-dz-uploadprogress]");
+            progressElement.style.width = progress + "%";
+            progressElement.querySelector(".progress-text").textContent = progress + "%";
+        }
+      })
 
       // dropzone.uploadFiles = function(files) {
       //   const self = this;

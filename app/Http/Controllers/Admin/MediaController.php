@@ -48,6 +48,6 @@ class MediaController extends Controller
         return back()->with([
             'success' => true,
             "data" => $media
-        );
+        ]);
     }
 }

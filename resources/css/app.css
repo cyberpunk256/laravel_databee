@@ -1,4 +1,5 @@
-@import 'node_modules/dropzone/dist/dropzone.css';
+@import "dropzone/dist/dropzone.css";
+@import "leaflet/dist/leaflet.css";
 .m_map {
     position: fixed;
     left: 0;

@@ -7,10 +7,13 @@
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Scripts -->
-        @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
     </head>
     <body>
         @inertia
+        @vite([
+            'resources/js/app.js',
+            'resources/css/app.css',
+        ])
     </body>
 </html>
