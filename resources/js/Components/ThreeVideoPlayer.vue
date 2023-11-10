@@ -4,7 +4,7 @@
       <v-btn icon="mdi-rewind" @click="toggleRewind"></v-btn>
       <v-btn :icon="isPlaying ? 'mdi-stop' : 'mdi-play'" @click="onTogglePlay"></v-btn>
       <v-btn icon="mdi-fast-forward" @click="onFast"></v-btn>
-      <v-btn icon="mdi-record" @click="onRecord"></v-btn>
+      <v-btn v-if="capture" icon="mdi-record" @click="onCapture"></v-btn>
       <div class="v_progress">
         <v-progress-linear v-model="progress" @click="seekTo"></v-progress-linear>
       </div>
@@ -16,7 +16,7 @@
 import { Viewer, VideoPanorama } from 'panolens';
 
 export default {
-  props: ['video'],
+  props: ['video', 'capture'],
   data() {
     return {
       video: null,

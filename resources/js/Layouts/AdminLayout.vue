@@ -1,5 +1,5 @@
 <script setup>
-import AdminNavigationMenu from '@/Components/AdminNavigationMenu.vue'
+import NavigationMenu from '@/Components/Admin/NavigationMenu.vue'
 </script>
 
 <template>
@@ -15,7 +15,7 @@ import AdminNavigationMenu from '@/Components/AdminNavigationMenu.vue'
         />
       </v-list>
       <v-divider />
-      <AdminNavigationMenu />
+      <NavigationMenu />
     </v-navigation-drawer>
     <v-app-bar color="primary">
       <v-app-bar-nav-icon v-if="$vuetify.display.mobile" @click.stop="drawer = !drawer" />

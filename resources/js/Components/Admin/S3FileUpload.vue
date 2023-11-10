@@ -1,10 +1,28 @@
 <template>
   <div class="dropzon_wrap">
-    <div ref="dropzone" class="dropzone needsclick">
-      <div class="dz-message needsclick">{{ label }}</div>
-    </div>
-    <v-input :error-messages="error">
-    </v-input>
+    <template v-if="origin">
+      <template v-if="type == 'video'">
+        <three-video-player 
+          v-if="origin" 
+          :video="origin"
+        />
+      </template>
+      <template v-if="type == 'image'">
+        <v-img
+          :width="300"
+          aspect-ratio="16/9"
+          cover
+          src="origin"
+        ></v-img>
+      </template>
+    </template>
+    <template v-else>
+      <div ref="dropzone" class="dropzone needsclick">
+        <div class="dz-message needsclick">{{ label }}</div>
+      </div>
+      <v-input :error-messages="error">
+      </v-input>
+    </template>
   </div>
 </template>
 
@@ -12,14 +30,11 @@
 import Dropzone from "dropzone";
 
 export default {
-  props: {
-    type: String,
-    label: String,
-    error: Array
-  },
+  props: [ 'type', 'label', 'error', 'origin' ],
   data() {
     return {
       upload_url: "/admin/media/upload",
+      method: "post",
       auto_process_queue: false,
       accepted_files: null,
       file_extension: null,
@@ -36,6 +51,7 @@ export default {
     init_data() {
       if(this.type == 'video') {
         this.accepted_files = "video/*"
+        this.method = "put";
       } else if(this.type == 'gpx') {
         this.accepted_files = ".gpx"
         this.auto_process_queue = true
@@ -57,6 +73,7 @@ export default {
           self.dropzone.options.url = data.presigned_url
           console.log('files', self.dropzone.files)
           if(self.dropzone.files.length > 0) {
+            self.$emit('status', true)
             self.dropzone.processQueue();
           }
         } else {
@@ -70,25 +87,27 @@ export default {
       }
     },
     init_file_upload() {
-      if(this.dropzone.files.length > 0) {
-        this.dropzone.options.url = this.upload_url
-        console.log('this.dropzone.files', this.dropzone.files)
-        this.dropzone.processQueue();
+      const self = this
+      if(self.dropzone.files.length > 0) {
+        self.dropzone.options.url = self.upload_url
+        setTimeout(function() {
+          self.$emit('status', true)
+          self.dropzone.processQueue();
+        }, 500)
       }
     },
     init_dropzone() {
       const self = this
       this.dropzone = new Dropzone(this.$refs.dropzone, {
         url: self.upload_url,
-        method: "PUT",
-        parallelUploads: 1,
+        method: self.method,
         thumbnailHeight: 120,
         thumbnailWidth: 120,
         maxFilesize: 1024 * 1024 * 1024 * 10, // 10Gbyte
         maxFiles: 1,
-        acceptedFiles: self.accepted_files,
+        // acceptedFiles: self.accepted_files,
         addRemoveLinks: true,
-        autoProcessQueue: self.auto_process_queue,
+        autoProcessQueue: false,
         dictRemoveFile: "削除",
         dictCancelUpload: "キャンセル",
         // previewTemplate: previewTemplate,
@@ -98,13 +117,15 @@ export default {
       })
       
       this.dropzone.on("addedfile", function(file) {
+        console.log('file', file);
         if (this.files.length > 1) {
           this.removeFile(this.files[0]);
         }
         if(self.type == 'video') {
           const file_extension = file.name.split('.').pop().toLowerCase()
           self.init_presigned_upload(file_extension)
-        } else {
+        }
+         else {
           self.init_file_upload()
         }
       });
@@ -116,10 +137,16 @@ export default {
       });
 
       this.dropzone.on("success", function (file, response) {
+        self.$emit('status', false)
         self.$emit('success', {
           file_path: self.file_path,
           file_name: self.file_name,
         })
+      });
+
+      this.dropzone.on("error", function (file, errorMessage) {
+        self.$emit('status', false)
+        self.show_toast()
       });
 
       this.dropzone.on("uploadprogress", function(file, progress, bytesSent) {

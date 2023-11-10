@@ -1,5 +1,6 @@
 <script setup>
-import S3FileUpload from '@/Components/S3FileUpload.vue'
+import S3FileUpload from '@/Components/Admin/S3FileUpload.vue'
+import Map from '@/Components/Admin/Map.vue'
 </script>
 
 <template>
@@ -19,60 +20,66 @@ import S3FileUpload from '@/Components/S3FileUpload.vue'
         />
         <template v-if="form.type == 1">
           <S3FileUpload
+            :origin="origin_video_path"
             :error="form.errors.video"
-            @success="onFileUploaded('video')"
-            @remove="onFileRemoved('video')"
-            label="メディアファイルをアップロードしてください。"
             type="video"
+            @success="value => onFileUploaded('video', value)"
+            @remove="onFileRemoved('video')"
+            @status="value => onUploadStatus('video', value)"
+            label="メディアファイルをアップロードしてください。"
             class="mt-2"
           />
           <S3FileUpload
+            :origin="origin_gpx_path"
             :error="form.errors.gpx"
-            @success="onFileUploaded('gpx')"
-            @remove="onFileRemoved('gpx')"
-            label="GPXファイルをアップロードしてください。"
             type="gpx"
+            @success="value => onFileUploaded('gpx', value)"
+            @remove="onFileRemoved('gpx')"
+            @status="value => onUploadStatus('video', value)"
+            label="GPXファイルをアップロードしてください。"
             class="mt-2"
           />
         </template>
         <template v-else>
           <S3FileUpload
-            type="image"
+            :origin="origin_image_path"
             :error="form.errors.media"
-            @success="onFileUploaded('image')"
+            type="image"
+            @success="value => onFileUploaded('image', value)"
             @remove="onFileRemoved('image')"
+            @status="value => onUploadStatus('video', value)"
             label="メディアファイルをアップロードしてください。"
-            folder="media"
             class="mt-2"
           />
         </template>
       </v-card-text>
       <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <Link href="/admin/user" as="div">
-          <v-btn text>キャンセル</v-btn>
-        </Link>
-        <v-btn @click.stop="onPreview" color="primary">プレビュー</v-btn>
-        <v-spacer></v-spacer>
-      </v-card-actions>
+      <v-row class="py-4" justify="center">
+        <v-col cols="auto">
+          <Link href="/admin/media" as="div">
+            <v-btn text>キャンセル</v-btn>
+          </Link>
+        </v-col>
+        <v-col cols="auto">
+          <v-btn :disabled="computedPreviewStatus" @click.stop="onPreview" color="primary">プレビュー</v-btn>
+        </v-col>
+      </v-row>
     </template>
     <template v-else>
-      <Map></Map>
+      <!-- <Map :items="items"></Map> -->
+      <Map ></Map>
     </template>
   </v-card>
 </template>
 
 <script>
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
-import Map from '@/Components/Map.vue'
 export default {
-  components: {
-    Map,
+  watch: {
   },
+  props: ['tab'],
   data() {
     return {
-      tab: 'map',
       form: useForm({
         name: null,
         video: null,
@@ -81,11 +88,16 @@ export default {
         type: 1, // 3d video
         image_lat: null,
         image_long: null,
+        origin_video_path: null,
+        origin_image_path: null,
+        origin_gpx_path: null,
       }),
-      origin_video_path: null,
-      origin_image_path: null,
-      origin_gpx_path: null,
       modal: false,
+      upload_status: {
+        video: false,
+        image: false,
+        gpx: false,
+      }
     }
   },
   mounted() {
@@ -100,21 +112,14 @@ export default {
         image_long: this.data.image_long,
       })
       if(this.data.type == 1) { // video 
-        this.origin_video_path = this.data.media_path
-        this.origin_gpx_path = this.data.gpx_path
+        this.form.origin_video_path = this.data.media_path
+        this.form.origin_gpx_path = this.data.gpx_path
       } else {
-        this.origin_image_path = this.data.media_path
+        this.form.origin_image_path = this.data.media_path
       }
     }
   },
   methods: {
-    submit() {
-      form.post('/admin/user', {
-        onSuccess: () => {
-          router.visit('/admin/user')
-        },
-      })
-    },
     onFileUploaded(field, data) {
       this.form[field] = {
         name: data.file_name,
@@ -122,23 +127,24 @@ export default {
       }
     },
     onValidate() {
+      let errors = {}
       if (!this.form.name) {
-        this.form.errors.name = 'メディア名を入力してください。'
+        errors.name = 'メディア名を入力してください。'
       }
       if (!this.form.type) {
-        this.form.errors.type = 'メディア種別を入力してください。'
+        errors.type = 'メディア種別を入力してください。'
       }
       if (this.form.type == 1 && !this.form.video) {
-        this.form.errors.video = '3D Movieを入力してください。'
+        errors.video = '3D Movieを入力してください。'
       }
       if (this.form.type == 1 && !this.form.gpx) {
-        this.form.errors.gpx = 'GPXデータを入力してください。'
+        errors.gpx = 'GPXデータを入力してください。'
       }
       if (this.form.type != 1 && !this.form.image) {
-        this.form.errors.image = '画像を入力してください。'
+        errors.image = '画像を入力してください。'
       }
-      console.log('errors', this.form.errors)
-      if (Object.keys(this.form.errors).length > 0) {
+      this.form.errors = errors
+      if (Object.keys(errors).length > 0) {
         return false
       } else {
         return true
@@ -146,18 +152,45 @@ export default {
     },
     onPreview() {
       if (this.onValidate()) {
+        this.$emit('preview')
       }
     },
+    onUploadStatus(field, value) {
+      this.upload_status = {
+        ...this.upload_status,
+        [field]: value
+      }
+      console.log('this.uploadd_status', this.upload_status)
+    }
   },
   computed: {
+    computedPreviewStatus() {
+      if(this.upload_status.video || this.upload_status.image || this.upload_status.gpx) {
+        return true;
+      } else {
+        return false;
+      }
+    },
     items() {
-      return [
-        {
-          type: 'video',
-          video_path: this.video_path,
-          gpx_path: this.gpx_path,
-        },
-      ]
+      if(this.form.type == 1) { // video
+        const video_path = this.form.origin_video_path ? this.form.origin_video_path : this.form.video.path
+        const gpx_path = this.form.origin_gpx_path ? this.form.origin_gpx_path : this.form.gpx.path
+        return [
+          {
+            type: 'video',
+            video_path: video_path,
+            gpx_path: gpx_path,
+          },
+        ]
+      } else {
+        const image_path = this.form.origin_image_path ? this.form.origin_image_path : this.form.image.path
+        return [
+          {
+            type: 'image',
+            image_path: image_path,
+          },
+        ]
+      }
     },
   },
 }

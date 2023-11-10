@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Illuminate\Http\UploadedFile;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
@@ -64,7 +65,7 @@ class MediaController extends Controller
     {
         $file_extension = $request->input('file_extension');
         try {
-            $file_name = Str::uuid() . "/" . $file_extension;
+            $file_name = Str::uuid() . "." . $file_extension;
             $file_path = "tmp/" . $file_name;
             
             $presignedUrl = $this->s3service->getPresignedUrl($file_path);
@@ -78,7 +79,7 @@ class MediaController extends Controller
             \Log::error($exception);
             return response()->json([
                 "error" => __('success_error')
-            ]);
+            ], 500);
         }
     }
 
@@ -86,7 +87,7 @@ class MediaController extends Controller
     {
         try {
             $file = $request->file('file');
-            $file_name = Str::uuid() . "/" . $file->getClientOriginalExtension();
+            $file_name = Str::uuid() . "." . $file->getClientOriginalExtension();
             $file_path = "tmp/" . $file_name;
             $status = $this->s3service->upload($file, $file_path);
             
@@ -95,30 +96,6 @@ class MediaController extends Controller
                 'file_path' => $file_path,
                 'file_name' => $file_name
             ]);
-        } catch (\Throwable $exception) {
-            \Log::error($exception);
-            return response()->json([
-                "error" => __('success_error')
-            ]);
-        }
-    }
-
-    public function getVideo(Request $request, $path)
-    {
-        try {
-            return $this->s3service->getVideo($path);
-        } catch (\Throwable $exception) {
-            \Log::error($exception);
-            return response()->json([
-                "error" => __('success_error')
-            ], 500);
-        }
-    }
-
-    public function getFile(Request $request, $path)
-    {
-        try {
-            return $this->s3service->getFile($path);
         } catch (\Throwable $exception) {
             \Log::error($exception);
             return response()->json([

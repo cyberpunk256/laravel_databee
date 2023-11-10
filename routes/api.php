@@ -16,8 +16,10 @@ use App\Http\Controllers\S3Controller;
 */
 
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-});
+Route::get('getVideo', [S3Controller::class, 'getVideo'])->name('getVideo');
+Route::get('getFile', [S3Controller::class, 'getFile'])->name('getFile');
+// Route::middleware('auth:sanctum')->group(function () {
+//     // Route::get('/user', function (Request $request) {
+//     //     return $request->user();
+//     // });
+// });

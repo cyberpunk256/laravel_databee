@@ -22,7 +22,7 @@ export default {
   created () {
   },
   components: { ThreeVideoPlayer },
-//   props: ['items'],
+  // props: ['items'],
   data() {
     return {
       map: null,
@@ -33,8 +33,8 @@ export default {
       items: [
         {
             type: 'video',
-            gpx_file: "/demo.gpx",
-            video_url: "/demo.mp4"
+            gpx_path: "tmp/VID_20230501/VID_20230501_175744_00_001.gpx",
+            video_path: "tmp/VID_20230501/VID_20230501_175744_00_001.mp4"
         },
       ],
       view: [36.2048, 138.2529],
@@ -59,13 +59,22 @@ export default {
     }).addTo(self.map)
     for (let i = 0; i < self.items.length; i++) {
       const item = self.items[i];
+      console.log('self.get_file(item.gpx_path)', self.get_file(item.gpx_path))
       if(item.type == 'video') {
-          new L.GPX(item.gpx_file, this.gpxOptions)
-            .on('loaded', self.onLoaded)
-            .on('click', function() {
-                self.onShowModal(item)
-            });
+        const init_gpx = () => {
+          try {
+            // const { data } = axios.get(self.get_file(item.gpx_path))
+            new L.GPX(self.get_file(item.gpx_path), this.gpxOptions)
+              .on('loaded', self.onLoaded)
+              .on('click', function() {
+                  self.onShowModal(item)
+              });
+          } catch(e) {
+            console.log(e)
+          }
         }
+        init_gpx();
+      }
     }
   },
   methods: {
@@ -74,7 +83,7 @@ export default {
       e.target.addTo(this.map);
     },
     onShowModal(item) {
-      this.modal_video = item.video_url
+      this.modal_video = this.get_video(item.video_path)
       this.modal = true
     }
   },

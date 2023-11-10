@@ -18,9 +18,11 @@ class S3Controller extends Controller
         $this->s3service = new S3Service();
     }
 
-    public function getVideo(Request $request, $path)
+    public function getVideo(Request $request)
     {
+        return response()->json(["xxxxx" => "xxasdfasdf"]);
         try {
+            $path = $request->input('path');
             return $this->s3service->getVideo($path);
         } catch (\Throwable $exception) {
             \Log::error($exception);
@@ -30,9 +32,10 @@ class S3Controller extends Controller
         }
     }
 
-    public function getFile(Request $request, $path)
+    public function getFile(Request $request)
     {
         try {
+            $path = $request->input('path');
             return $this->s3service->getFile($path);
         } catch (\Throwable $exception) {
             \Log::error($exception);

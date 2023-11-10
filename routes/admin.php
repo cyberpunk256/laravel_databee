@@ -7,8 +7,6 @@ use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\MediaController;
-
-use App\Http\Controllers\S3Controller;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -32,8 +30,6 @@ Route::middleware('auth.admin')->group(function () {
     Route::post('/logout', [DashboardController::class, 'destroy'])->name('logout');
     Route::resource('/user', UserController::class)->except(['show']);
     Route::post('/media/presigned_url', [MediaController::class, 'getPresignedUrl'])->name('media.presigned_url');
-    Route::put('/media/upload', [MediaController::class, 'upload'])->name('media.upload');
+    Route::post('/media/upload', [MediaController::class, 'upload'])->name('media.upload');
     Route::resource('/media', MediaController::class)->except(['show']);
-    Route::get('/media/getVideo/{path}', [MediaController::class, 'getVideo'])->name('media.getVideo');
-    Route::get('/media/getFile/{path}', [MediaController::class, 'getFile'])->name('media.getFile');
 });
