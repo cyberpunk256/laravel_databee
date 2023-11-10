@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "146f05bea042bd0aed496242dfcabaed",
+    "content-hash": "db5aeb4992a398b0ed17630eaab1257f",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.283.18",
+            "version": "3.285.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "0263a41920f77a521660fb128701d9c9c6312756"
+                "reference": "93165f8e241678b17f15212523dfe96f50307af1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/0263a41920f77a521660fb128701d9c9c6312756",
-                "reference": "0263a41920f77a521660fb128701d9c9c6312756",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/93165f8e241678b17f15212523dfe96f50307af1",
+                "reference": "93165f8e241678b17f15212523dfe96f50307af1",
                 "shasum": ""
             },
             "require": {
@@ -151,9 +151,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.283.18"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.285.2"
             },
-            "time": "2023-11-02T18:16:01+00:00"
+            "time": "2023-11-09T01:20:37+00:00"
         },
         {
             "name": "brick/math",
@@ -1864,72 +1864,6 @@
                 }
             ],
             "time": "2023-05-04T09:04:26+00:00"
-        },
-        {
-            "name": "league/flysystem-aws-s3-v3",
-            "version": "3.16.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/thephpleague/flysystem-aws-s3-v3.git",
-                "reference": "ded9ba346bb01cb9cc4cc7f2743c2c0e14d18e1c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem-aws-s3-v3/zipball/ded9ba346bb01cb9cc4cc7f2743c2c0e14d18e1c",
-                "reference": "ded9ba346bb01cb9cc4cc7f2743c2c0e14d18e1c",
-                "shasum": ""
-            },
-            "require": {
-                "aws/aws-sdk-php": "^3.220.0",
-                "league/flysystem": "^3.10.0",
-                "league/mime-type-detection": "^1.0.0",
-                "php": "^8.0.2"
-            },
-            "conflict": {
-                "guzzlehttp/guzzle": "<7.0",
-                "guzzlehttp/ringphp": "<1.1.1"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "League\\Flysystem\\AwsS3V3\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Frank de Jonge",
-                    "email": "info@frankdejonge.nl"
-                }
-            ],
-            "description": "AWS S3 filesystem adapter for Flysystem.",
-            "keywords": [
-                "Flysystem",
-                "aws",
-                "file",
-                "files",
-                "filesystem",
-                "s3",
-                "storage"
-            ],
-            "support": {
-                "issues": "https://github.com/thephpleague/flysystem-aws-s3-v3/issues",
-                "source": "https://github.com/thephpleague/flysystem-aws-s3-v3/tree/3.16.0"
-            },
-            "funding": [
-                {
-                    "url": "https://ecologi.com/frankdejonge",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/frankdejonge",
-                    "type": "github"
-                }
-            ],
-            "time": "2023-08-30T10:14:57+00:00"
         },
         {
             "name": "league/flysystem-local",

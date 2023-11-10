@@ -13,7 +13,7 @@
         @inertia
         @vite([
             'resources/js/app.js',
-            'resources/css/app.css',
+            'resources/scss/app.scss',
         ])
     </body>
 </html>

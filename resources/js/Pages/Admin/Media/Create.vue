@@ -19,68 +19,48 @@ const breadcrumbs = ref([
 
 <template>
   <AdminLayout>
-    <div class="mb-5">
-      <h5 class="text-h5 font-weight-bold">メディア新規登録</h5>
-      <Breadcrumbs :items="breadcrumbs" class="pa-0 mt-1" />
-    </div>
-    <v-card v-if="tab == 'form'">
-      <v-card-text>
-        <v-text-field v-model="form.name" label="メディア名" variant="underlined" :error-messages="form.errors.name" />
-        <v-select
-          v-model="form.type"
-          :items="enums.media_types"
-          item-title="text"
-          item-value="value"
-          label="メディア種別"
-          variant="underlined"
-          :error-messages="form.errors.type"
-        />
-        <S3FileUpload 
-          @success="onFileUpload('url')"
-          :error="form.errors.url"
-          label="メディアファイルをアップロードしてください。"
-          folder="media"
-          class="mt-2"/>
-        <S3FileUpload 
-          v-if="form.type == 1"
-          @success="onFileUpload('gpx_url')"
-          :error="form.errors.gpx_url"
-          label="GPXファイルをアップロードしてください。"
-          folder="gpx"
-          class="mt-2"/>
-      </v-card-text>
-      <v-divider class="mt-12"></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <Link href="/admin/user" as="div">
-          <v-btn text>キャンセル</v-btn>
-        </Link>
-        <v-btn type="submit" color="primary">プレビュー</v-btn>
-        <v-spacer></v-spacer>
-      </v-card-actions>
-    </v-card>
-    <v-card v-if="tab == 'map'">
-
-    </v-card>
+    <v-row
+      justify="space-between"
+      container 
+      spacing={24}
+      class="mb-5"
+    >
+      <v-col>
+        <h5 class="text-h5 font-weight-bold">メディア新規登録</h5>
+        <Breadcrumbs :items="breadcrumbs" class="pa-0 mt-1" />
+      </v-col>
+      <v-spacer></v-spacer>
+      <v-col cols="auto">
+        <v-btn v-if="tab == 'map'" icon="mdi-arrow-left" @click="tab = 'form'"></v-btn>
+      </v-col>
+    </v-row>
+    <MediaForm :data="data"></MediaForm>
   </AdminLayout>
 </template>
 
 <script>
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
+import Map from '@/Components/Map.vue';
 export default {
-  props: {
+  components: {
+    Map
   },
   data() {
     return {
-      tab: 'form',
+      tab: 'map',
       form: useForm({
         name: null,
-        email: null,
-        password: null,
-        phone: null,
-        gender: null,
-        address: null,
-      })
+        video: null,
+        image: null,
+        gpx: null,
+        type: 1, // 3d video
+        image_lat: null,
+        image_long: null,
+      }),
+      video_url: null,
+      image_file: null,
+      gpx_file: null,
+      modal: false,
     }
   },
   mounted() {
@@ -93,9 +73,58 @@ export default {
         },
       })
     },
-    onFileUpload(field, url) {
-      this.form[field] = url
+    onFileUploaded(field, data) {
+      this.form[field] = {
+        name: data.file_name,
+        path: data.file_path,
+      }
+      if(field == 'video') {
+        this.video_url = data.presigned_url
+      } else if(field == 'image') {
+        this.image_file = data.file
+      } else if(field == 'gpx') {
+        this.gpx_file = data.file
+      }
+    },
+    onValidate() {
+      if(!this.form.name) {
+        this.form.errors.name = "メディア名を入力してください。";
+      }
+      if(!this.form.type) {
+        this.form.errors.type = "メディア種別を入力してください。";
+      }
+      if(this.form.type == 1 && !this.form.video) {
+        this.form.errors.video = "3D Movieを入力してください。";
+      }
+      if(this.form.type == 1 && !this.form.gpx) {
+        this.form.errors.gpx = "GPXデータを入力してください。";
+      }
+      if(this.form.type != 1 && !this.form.image) {
+        this.form.errors.image = "画像を入力してください。";
+      }
+      console.log('errors', this.form.errors);
+      if(Object.keys(this.form.errors).length > 0) {
+        return false
+      } else {
+        return true
+      }
+    },
+    onPreview() {
+      if(this.onValidate()) {
+
+      }
     }
   },
+  computed: {
+    items() {
+      return [
+        {
+          type: 'video',
+          video_url: this.video_url,
+          gpx_file: this.gpx_file
+        }
+      ]
+    }
+  }
 }
 </script>

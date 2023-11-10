@@ -1,10 +1,12 @@
 <template>
-  <div ref="panoramaContainer" class="panoramaContainer">
-    <div class="custom-controls">
-      <button @click="togglePlay">{{ isPlaying ? 'Pause' : 'Play' }}</button>
-      <button @click="stopVideo">Stop</button>
-      <div class="progress-bar" @click="seekTo">
-        <div class="progress" :style="{ width: progress + '%' }"></div>
+  <div ref="video_wrap" class="video_wrap">
+    <div class="video_controls">
+      <v-btn icon="mdi-rewind" @click="toggleRewind"></v-btn>
+      <v-btn :icon="isPlaying ? 'mdi-stop' : 'mdi-play'" @click="onTogglePlay"></v-btn>
+      <v-btn icon="mdi-fast-forward" @click="onFast"></v-btn>
+      <v-btn icon="mdi-record" @click="onRecord"></v-btn>
+      <div class="v_progress">
+        <v-progress-linear v-model="progress" @click="seekTo"></v-progress-linear>
       </div>
     </div>
   </div>
@@ -14,7 +16,7 @@
 import { Viewer, VideoPanorama } from 'panolens';
 
 export default {
-  name: 'Custom360VideoPlayer',
+  props: ['video'],
   data() {
     return {
       video: null,
@@ -30,11 +32,11 @@ export default {
     initVideoPlayer() {
       // Create a viewer for the panorama
       const viewer = new Viewer({
-        container: this.$refs.panoramaContainer,
+        container: this.$refs.video_wrap,
       });
 
       // Create a VideoPanorama with your 360-degree video
-      const panorama = new VideoPanorama("VID_20230501_181734_00_009.mp4", {
+      const panorama = new VideoPanorama(this.video, {
         autoplay: false, // Disable auto-play for custom control handling
       });
 
@@ -44,19 +46,13 @@ export default {
       // Get a reference to the video element
       this.video = panorama.getVideoElement();
     },
-    togglePlay() {
+    onTogglePlay() {
       if (this.isPlaying) {
         this.video.pause();
       } else {
         this.video.play();
       }
       this.isPlaying = !this.isPlaying;
-    },
-    stopVideo() {
-      this.video.pause();
-      this.video.currentTime = 0;
-      this.isPlaying = false;
-      this.progress = 0;
     },
     seekTo(event) {
       const video = this.panorama.getVideoElement();
@@ -73,31 +69,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.custom-controls {
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  right: 0;
-  text-align: center;
-}
-
-.custom-controls button {
-  margin: 5px;
-  padding: 5px 10px;
-  cursor: pointer;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 5px;
-  background: #ccc;
-  position: relative;
-}
-
-.progress {
-  height: 100%;
-  background: #0f8;
-}
-</style>

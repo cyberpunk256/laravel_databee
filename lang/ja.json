@@ -791,6 +791,7 @@
     "success_update": "更新されました。",
     "success_delete": "削除されました。",
     "success_fail": "操作が失敗しました。",
-    "success_error": "エラーが発生しました。"
+    "success_error": "エラーが発生しました。",
+    "success_complete": "操作が成功しました。"
 }
     

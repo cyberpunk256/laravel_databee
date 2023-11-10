@@ -31,9 +31,9 @@ Route::middleware('auth.admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('index');
     Route::post('/logout', [DashboardController::class, 'destroy'])->name('logout');
     Route::resource('/user', UserController::class)->except(['show']);
+    Route::post('/media/presigned_url', [MediaController::class, 'getPresignedUrl'])->name('media.presigned_url');
+    Route::put('/media/upload', [MediaController::class, 'upload'])->name('media.upload');
     Route::resource('/media', MediaController::class)->except(['show']);
-
-    Route::post('/s3/designed_url', [S3Controller::class, 'getPresignedUrl'])->name('s3.designed_url');
+    Route::get('/media/getVideo/{path}', [MediaController::class, 'getVideo'])->name('media.getVideo');
+    Route::get('/media/getFile/{path}', [MediaController::class, 'getFile'])->name('media.getFile');
 });
-
-Route::post('/s3/upload', [S3Controller::class, 'upload'])->name('s3.upload');

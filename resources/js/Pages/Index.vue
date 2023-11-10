@@ -37,12 +37,8 @@ export default {
       modalVideo: null,
       gpxs: [
         {
-          url: "VID_20230501_181734_00_009.gpx",
-          video: "VID_20230501_181734_00_009.mp4"
-        },
-        {
-          url: "https://mpetazzoni.github.io/leaflet-gpx/demo.gpx",
-          video: "VID_20230501_181734_00_009.mp4"
+          url: "demo.gpx",
+          video: "demo.mp4"
         },
       ],
       view: [36.2048, 138.2529],
@@ -76,6 +72,7 @@ export default {
   },
   methods: {
     onLoaded(e) {
+      this.map.fitBounds(e.target.getBounds());
       e.target.addTo(this.map);
     },
     onShowModal(item) {

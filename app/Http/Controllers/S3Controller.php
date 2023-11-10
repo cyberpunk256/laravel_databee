@@ -6,45 +6,39 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Aws\S3\S3Client;
+
+use App\Services\S3Service;
 
 class S3Controller extends Controller
 {
-    public function getPresignedUrl(Request $request)
+    protected S3Service $s3service;
+    public function __construct()
+    {
+        $this->s3service = new S3Service();
+    }
+
+    public function getVideo(Request $request, $path)
     {
         try {
-            $fileName = uniqid();
-            $folder = $request->input('folder'); // ファイル名を取得する
-    
-            $s3 = Storage::disk('s3');
-            $client = $s3->getClient();
-
-            $cmd = $client->getCommand('PutObject', [
-                'Bucket' => config('filesystems.disks.s3.bucket'),
-                'Key' => $folder . "/" . $fileName
-            ]);
-    
-            $request = $client->createPresignedRequest($cmd, '+20 minutes');
-    
-            return response()->json([
-                'presigned_url' => (string) $request->getUri()
-            ]);
+            return $this->s3service->getVideo($path);
         } catch (\Throwable $exception) {
             \Log::error($exception);
             return response()->json([
                 "error" => __('success_error')
-            ]);
+            ], 500);
         }
     }
 
-    public function upload(Request $request) 
+    public function getFile(Request $request, $path)
     {
-         // Set file attributes.
-         $filepath = 'tmp';
-         $file = $request->file('file');
-         $filename = "11111112.mp4"; // Hidden input with a generated value
-
-         // Upload to S3, overwriting if filename exists.
-         $result = File::streamUpload($filepath, $filename, $file, true);
-         return $result;
+        try {
+            return $this->s3service->getFile($path);
+        } catch (\Throwable $exception) {
+            \Log::error($exception);
+            return response()->json([
+                "error" => __('success_error')
+            ], 500);
+        }
     }
 }

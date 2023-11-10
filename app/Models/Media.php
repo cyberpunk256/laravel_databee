@@ -17,8 +17,8 @@ class Media extends Model
         'name',
         'type',
         'video_time',
-        'url',
-        'gpx_url',
+        'media_path',
+        'gpx_path',
         'image_lat',
         'image_long',
         'deleted_at'

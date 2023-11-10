@@ -4,13 +4,22 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Http\Requests\Admin\MediaUpdateRequest;
 
+use App\Services\S3Service;
+
 class MediaController extends Controller
 {
+    protected S3Service $s3service;
+    public function __construct()
+    {
+        $this->s3service = new S3Service();
+    }
+
     public function index(Request $request)
     {
         $query = Media::query()->when($request->get('search'), function ($query, $search) {
@@ -49,5 +58,72 @@ class MediaController extends Controller
             'success' => true,
             "data" => $media
         ]);
+    }
+
+    public function getPresignedUrl(Request $request) 
+    {
+        $file_extension = $request->input('file_extension');
+        try {
+            $file_name = Str::uuid() . "/" . $file_extension;
+            $file_path = "tmp/" . $file_name;
+            
+            $presignedUrl = $this->s3service->getPresignedUrl($file_path);
+            return response()->json([
+                "success" => __("success_complete"),
+                'presigned_url' => $presignedUrl,
+                'file_path' => $file_path,
+                'file_name' => $file_name
+            ]);
+        } catch (\Throwable $exception) {
+            \Log::error($exception);
+            return response()->json([
+                "error" => __('success_error')
+            ]);
+        }
+    }
+
+    public function upload(Request $request) 
+    {
+        try {
+            $file = $request->file('file');
+            $file_name = Str::uuid() . "/" . $file->getClientOriginalExtension();
+            $file_path = "tmp/" . $file_name;
+            $status = $this->s3service->upload($file, $file_path);
+            
+            return response()->json([
+                "success" => __("success_complete"),
+                'file_path' => $file_path,
+                'file_name' => $file_name
+            ]);
+        } catch (\Throwable $exception) {
+            \Log::error($exception);
+            return response()->json([
+                "error" => __('success_error')
+            ]);
+        }
+    }
+
+    public function getVideo(Request $request, $path)
+    {
+        try {
+            return $this->s3service->getVideo($path);
+        } catch (\Throwable $exception) {
+            \Log::error($exception);
+            return response()->json([
+                "error" => __('success_error')
+            ], 500);
+        }
+    }
+
+    public function getFile(Request $request, $path)
+    {
+        try {
+            return $this->s3service->getFile($path);
+        } catch (\Throwable $exception) {
+            \Log::error($exception);
+            return response()->json([
+                "error" => __('success_error')
+            ], 500);
+        }
     }
 }
