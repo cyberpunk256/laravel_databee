@@ -7,7 +7,7 @@
         >
             <v-card class="video_card">
                 <v-btn icon="mdi-close" @click="modal = false" class="video_close"></v-btn>
-                <three-video-player v-if="modal_video" :video="modal_video"/>
+                <three-video-player v-if="modal_video_url" :url="modal_video_url"/>
             </v-card>
         </v-dialog>
     </div>
@@ -16,7 +16,7 @@
 <script>
 import L from 'leaflet';
 import 'leaflet-gpx';
-import ThreeVideoPlayer from '@/Components/ThreeVideoPlayer.vue';
+import ThreeVideoPlayer from '@/Components/Admin/ThreeVideoPlayer.vue';
 
 export default {
   created () {
@@ -29,12 +29,12 @@ export default {
       zoom: 2,
       center: [47.41322, -1.219482],
       modal: false,
-      modal_video: null,
+      modal_video_url: null,
       items: [
         {
             type: 'video',
             gpx_path: "tmp/VID_20230501/VID_20230501_175744_00_001.gpx",
-            video_path: "tmp/VID_20230501/VID_20230501_175744_00_001.mp4"
+            video_path: "tmp/test_minvideo_2mbyte.mp4"
         },
       ],
       view: [36.2048, 138.2529],
@@ -83,8 +83,19 @@ export default {
       e.target.addTo(this.map);
     },
     onShowModal(item) {
-      this.modal_video = this.get_video(item.video_path)
-      this.modal = true
+      const self = this
+      axios.post('/api/get_presigned_url', {
+        path: item.video_path
+      }).then((res) => {
+        const { data } = res
+        if(data.success) {
+          // self.modal_video_url = data.presigned_url
+          self.modal_video_url = '/demo.mp4'
+          this.modal = true
+        } else {
+          self.show_toast();
+        }
+      })
     }
   },
 };

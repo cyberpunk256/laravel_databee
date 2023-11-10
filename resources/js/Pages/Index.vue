@@ -1,6 +1,10 @@
 <template>
   <v-app class="bg-grey-lighten-4">
-    <div id="map" class="m_map"></div>
+    <!-- <div id="map" class="m_map">
+    </div> -->
+    <video width="1000" height="500" controls>
+        <source src="https://3d-videos-new.s3.ap-northeast-1.amazonaws.com/tmp/test_minvideo_2mbyte.mp4?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAWY3UZSKFESTL7VMH%2F20231110%2Fap-northeast-1%2Fs3%2Faws4_request&X-Amz-Date=20231110T152159Z&X-Amz-SignedHeaders=host&X-Amz-Expires=1800&X-Amz-Signature=944d508d292bff603c3c6a826ec2e8621d2c7ddbf6b6ef8e95dd6240b1aa4393"  type="video/mp4"/>
+    </video>
     <v-dialog
       v-model="modal"
       width="auto"
@@ -56,19 +60,19 @@ export default {
     };
   },
   mounted() {
-    const self = this
-    self.map = L.map('map').setView(this.view,6);
-    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
-    }).addTo(self.map)
-    for (let i = 0; i < self.gpxs.length; i++) {
-      const item = self.gpxs[i];
-      new L.GPX(item.url, this.gpxOptions)
-        .on('loaded', self.onLoaded)
-        .on('click', function() {
-          self.onShowModal(item)
-        });
-    }
+    // const self = this
+    // self.map = L.map('map').setView(this.view,6);
+    // L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //   attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
+    // }).addTo(self.map)
+    // for (let i = 0; i < self.gpxs.length; i++) {
+    //   const item = self.gpxs[i];
+    //   new L.GPX(item.url, this.gpxOptions)
+    //     .on('loaded', self.onLoaded)
+    //     .on('click', function() {
+    //       self.onShowModal(item)
+    //     });
+    // }
   },
   methods: {
     onLoaded(e) {

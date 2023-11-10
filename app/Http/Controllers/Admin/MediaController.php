@@ -61,14 +61,16 @@ class MediaController extends Controller
         ]);
     }
 
-    public function getPresignedUrl(Request $request) 
+    public function createPresignedUrl(Request $request) 
     {
-        $file_extension = $request->input('file_extension');
         try {
+            $file_extension = $request->input('extension');
+            $file_content_type = $request->input('type');
             $file_name = Str::uuid() . "." . $file_extension;
-            $file_path = "tmp/" . $file_name;
+            // $file_path = "tmp/" . $file_name;
+            $file_path = "tmp/test_minvideo_2mbyte_2.mp4";
             
-            $presignedUrl = $this->s3service->getPresignedUrl($file_path);
+            $presignedUrl = $this->s3service->createPresignedUrl($file_path, $file_content_type);
             return response()->json([
                 "success" => __("success_complete"),
                 'presigned_url' => $presignedUrl,
@@ -83,7 +85,7 @@ class MediaController extends Controller
         }
     }
 
-    public function upload(Request $request) 
+    public function postUpload(Request $request) 
     {
         try {
             $file = $request->file('file');

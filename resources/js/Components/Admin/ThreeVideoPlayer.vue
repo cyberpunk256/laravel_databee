@@ -2,11 +2,12 @@
   <div ref="video_wrap" class="video_wrap">
     <div class="video_controls">
       <v-btn icon="mdi-rewind" @click="toggleRewind"></v-btn>
-      <v-btn :icon="isPlaying ? 'mdi-stop' : 'mdi-play'" @click="onTogglePlay"></v-btn>
+      <v-btn v-if="isPlaying" icon="mdi-stop" @click="onPause"></v-btn>
+      <v-btn v-if="!isPlaying" icon="mdi-play" @click="onPlay"></v-btn>
       <v-btn icon="mdi-fast-forward" @click="onFast"></v-btn>
       <v-btn v-if="capture" icon="mdi-record" @click="onCapture"></v-btn>
       <div class="v_progress">
-        <v-progress-linear v-model="progress" @click="seekTo"></v-progress-linear>
+        <v-progress-linear v-model="progress" @click="onSeekTo" :height="10"></v-progress-linear>
       </div>
     </div>
   </div>
@@ -22,6 +23,7 @@ export default {
       panorama: null,
       isPlaying: false,
       progress: 0,
+      disabled: false
     };
   },
   mounted() {
@@ -29,6 +31,7 @@ export default {
   },
   methods: {
     initVideoPlayer() {
+      const self = this
       // Create a viewer for the panorama
       const viewer = new Viewer({
         container: this.$refs.video_wrap,
@@ -44,26 +47,37 @@ export default {
 
       // Get a reference to the video element
       this.video = panorama.getVideoElement();
+      this.video.addEventListener('timeupdate', function() {
+        // ビデオの現在の再生時間と総時間を取得
+        var currentTime = self.video.currentTime;
+        var duration = self.video.duration;
+
+        // プログレスバーの幅を更新
+        self.progress = (currentTime / duration) * 100;
+    });
+
     },
-    onTogglePlay() {
-      if (this.isPlaying) {
-        this.video.pause();
-      } else {
-        this.video.play();
+    onPause() {
+      this.video.pause();
+      this.isPlaying = false;
+    },
+    async onPlay() {
+      try {
+        await this.video.play();
+        this.isPlaying = true
+      } catch(e) {
+        console.log(e)
       }
-      this.isPlaying = !this.isPlaying;
     },
-    seekTo(event) {
+    onSeekTo(event) {
       const video = this.panorama.getVideoElement();
       const boundingRect = event.currentTarget.getBoundingClientRect();
       const clickX = event.clientX - boundingRect.left;
       const fullWidth = boundingRect.width;
       const percent = (clickX / fullWidth) * 100;
       this.progress = percent;
-      console.log('video.duration', this.video.duration);
       const time = parseInt((percent / 100) * this.video.duration);
       this.video.currentTime += 10;
-      console.log('time', video.currentTime);
     },
   },
 };

@@ -15,11 +15,10 @@ use App\Http\Controllers\S3Controller;
 |
 */
 
-
-Route::get('getVideo', [S3Controller::class, 'getVideo'])->name('getVideo');
-Route::get('getFile', [S3Controller::class, 'getFile'])->name('getFile');
-// Route::middleware('auth:sanctum')->group(function () {
-//     // Route::get('/user', function (Request $request) {
-//     //     return $request->user();
-//     // });
-// });
+Route::middleware('auth:sanctum')->group(function () {
+    // Route::get('/user', function (Request $request) {
+    //     return $request->user();
+    // });
+    Route::post('get_presigned_url', [S3Controller::class, 'getPresignedUrl'])->name('getPresignedUrl');
+    Route::get('get_file', [S3Controller::class, 'getFile'])->name('getFile');
+});

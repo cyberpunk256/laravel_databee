@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\File;
-use Aws\S3\S3Client;
 
 use App\Services\S3Service;
 
@@ -18,12 +15,15 @@ class S3Controller extends Controller
         $this->s3service = new S3Service();
     }
 
-    public function getVideo(Request $request)
+    public function getPresignedUrl(Request $request) 
     {
-        return response()->json(["xxxxx" => "xxasdfasdf"]);
         try {
             $path = $request->input('path');
-            return $this->s3service->getVideo($path);
+            $presignedUrl = $this->s3service->getPresignedUrl($path);
+            return response()->json([
+                "success" => __("success_complete"),
+                'presigned_url' => $presignedUrl,
+            ]);
         } catch (\Throwable $exception) {
             \Log::error($exception);
             return response()->json([

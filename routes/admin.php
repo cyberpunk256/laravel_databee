@@ -21,15 +21,16 @@ use App\Http\Controllers\Admin\MediaController;
 
 
 Route::middleware('guest:admin')->group(function () {
-    Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+    Route::get('login', [LoginController::class, 'create'])->name('login');
+    Route::post('login', [LoginController::class, 'store'])->name('login.store');
 });
 
 Route::middleware('auth.admin')->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('index');
-    Route::post('/logout', [DashboardController::class, 'destroy'])->name('logout');
+    Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
+    Route::get('', [DashboardController::class, 'index'])->name('index');
     Route::resource('/user', UserController::class)->except(['show']);
-    Route::post('/media/presigned_url', [MediaController::class, 'getPresignedUrl'])->name('media.presigned_url');
-    Route::post('/media/upload', [MediaController::class, 'upload'])->name('media.upload');
+    Route::post('media/new_presigned_url', [MediaController::class, 'createPresignedUrl'])->name('media.createPresignedUrl');
+    Route::post('media/upload', [MediaController::class, 'upload'])->name('media.postUpload');
     Route::resource('/media', MediaController::class)->except(['show']);
+
 });

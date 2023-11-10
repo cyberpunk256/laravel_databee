@@ -23,12 +23,12 @@ class S3Service
             ],
         ]);
     }
-    public function getPresignedUrl(String $file_path)
+    
+    public function createPresignedUrl(String $path, String $content_type)
     {
         $cmd = $this->s3client->getCommand('PutObject', [
             'Bucket' => config('filesystems.disks.s3.bucket'),
-            'Key' => $file_path,
-            'ContentType' => 'application/octet-stream', // ファイルのMIMEタイプ
+            'Key' => $path,
         ]);
 
         $presignedUrl = $this->s3client
@@ -38,12 +38,26 @@ class S3Service
         return $presignedUrl;
     }
 
-    public function upload($file, $file_path) 
+    public function getPresignedUrl(String $path, String $content_type)
+    {
+        $cmd = $this->s3client->getCommand('GetObject', [
+            'Bucket' => config('filesystems.disks.s3.bucket'),
+            'Key' => $path,
+        ]);
+
+        $presignedUrl = $this->s3client
+            ->createPresignedRequest($cmd, '+30 minutes')
+            ->getUri();
+
+        return $presignedUrl;
+    }
+
+    public function upload($file, $path) 
     {
         $this->s3client->putObject([
-            'Bucket'     => config('filesystems.disks.s3.bucket'),
-            'Key'        => $file_path,
-            'Body'       => file_get_contents($file), // 画像ファイルの内容を取得
+            'Bucket' => config('filesystems.disks.s3.bucket'),
+            'Key'    => $path,
+            'Body'   => file_get_contents($file), // 画像ファイルの内容を取得
         ]);
 
         return true;
@@ -52,41 +66,22 @@ class S3Service
     public function getList()
     {
         $list = $this->s3client->listObjects([
-            'Bucket'     => config('filesystems.disks.s3.bucket'),
+            'Bucket' => config('filesystems.disks.s3.bucket'),
         ]);
         return $list['Contents'];
     }
 
-    public function getVideo(String $path)
-    {
-        try {
-
-            $result = $this->s3client->getObject([
-                'Key' => $path,
-            ]);
-            $result = $this->s3client->getObject([
-                'Bucket' => config('filesystems.disks.s3.bucket'),
-                'Key' => $path,
-            ]);
-
-            $stream = new Stream($result['Body']);
-
-            return response()->stream(function () use ($stream) {
-                fpassthru($stream);
-            }, 200, [
-                'Content-Type' => $result['ContentType'],
-                'Content-Disposition' => 'inline; filename="' . $videoKey . '"',
-                'Accept-Ranges' => 'bytes',
-                'Content-Length' => $result['ContentLength']
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
     public function getFile(String $path) 
     {
-        
+        $result = $this->s3client->getObject([
+            'Bucket' => config('filesystems.disks.s3.bucket'),
+            'Key' => $path,
+        ]);
+
+        // Get the contents of the file
+        $fileContent = $result['Body']->getContents();
+
+        // You can then do something with $fileContent, like return it as a response
+        return response($fileContent, 200)->header('Content-Type', $result['ContentType']);
     }
 }

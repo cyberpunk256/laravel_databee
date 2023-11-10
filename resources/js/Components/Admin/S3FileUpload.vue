@@ -59,13 +59,11 @@ export default {
         this.accepted_files = "image/*"
       }
     },
-    async init_presigned_upload(file_extension) {
+    async init_presigned_upload(params) {
       const self = this
       self.dropzone.options.clickable = false;
       try {
-        const { data } = await axios.post(`/admin/media/presigned_url`, {
-          file_extension: file_extension
-        });
+        const { data } = await axios.post(`/admin/media/new_presigned_url`, params);
         if(data.success) {
           self.file_path = data.file_path
           self.file_name = data.file_name
@@ -122,8 +120,11 @@ export default {
           this.removeFile(this.files[0]);
         }
         if(self.type == 'video') {
-          const file_extension = file.name.split('.').pop().toLowerCase()
-          self.init_presigned_upload(file_extension)
+          const extension = file.name.split('.').pop().toLowerCase()
+          self.init_presigned_upload({
+            extension: extension,
+            type: file.type
+          })
         }
          else {
           self.init_file_upload()
@@ -147,6 +148,11 @@ export default {
       this.dropzone.on("error", function (file, errorMessage) {
         self.$emit('status', false)
         self.show_toast()
+      });
+
+
+      this.dropzone.on("sending", function (file, xhr, formData) {
+        xhr.setRequestHeader("Content-Type", file.type);
       });
 
       this.dropzone.on("uploadprogress", function(file, progress, bytesSent) {

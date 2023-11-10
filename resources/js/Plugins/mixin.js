@@ -26,11 +26,8 @@ export default {
                 toast.error("エラーが発生しました。", { timeout: 1000 });
             }
         },
-        get_video(path) {
-            return `/api/getVideo?path=${path}`
-        },
         get_file(path) {
-            return `/api/getFile?path=${path}`
-        }
+            return `/api/get_file?path=${path}`
+        },
     }
 };

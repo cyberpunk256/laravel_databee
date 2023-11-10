@@ -17,8 +17,8 @@ class IndexController extends Controller
 
     public function index(Request $request)
     {
-        $list = $this->s3service->getList();
-        dd(array_column($list, 'Key'));
+        // $list = $this->s3service->getList();
+        // dd(array_column($list, 'Key'));
         return Inertia::render('Index');
     }
 }
