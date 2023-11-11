@@ -88,7 +88,7 @@ import { Head, Link, useForm, router } from '@inertiajs/vue3'
 export default {
   watch: {
   },
-  props: ['tab'],
+  props: ['tab', 'method', 'data', 'action'],
   data() {
     return {
       form: useForm({
@@ -112,22 +112,20 @@ export default {
     }
   },
   mounted() {
-    if(this.data) {
-      this.form = useForm({
-        name: this.data.name,
-        video: null,
-        image: null,
-        gpx: null,
-        type: this.data.type,
-        image_lat: this.data.image_lat,
-        image_long: this.data.image_long,
-      })
-      if(this.data.type == 1) { // video 
-        this.form.origin_video_path = this.data.media_path
-        this.form.origin_gpx_path = this.data.gpx_path
-      } else {
-        this.form.origin_image_path = this.data.media_path
-      }
+    this.form = useForm({
+      name: this.data.name,
+      video: null,
+      image: null,
+      gpx: null,
+      type: this.data.type,
+      image_lat: this.data.image_lat,
+      image_long: this.data.image_long,
+    })
+    if(this.data.type == 1) { // video 
+      this.form.origin_video_path = this.data.media_path
+      this.form.origin_gpx_path = this.data.gpx_path
+    } else {
+      this.form.origin_image_path = this.data.media_path
     }
   },
   methods: {
@@ -138,19 +136,22 @@ export default {
     onValidate() {
       let errors = {}
       if (!this.form.name) {
-        errors.name = 'メディア名を入力してください。'
+        errors.name = 'メディア名は必ず入力してください。'
       }
       if (!this.form.type) {
-        errors.type = 'メディア種別を入力してください。'
+        errors.type = 'メディア種別は必ず入力してください。'
       }
       if (this.form.type == 1 && !this.form.video) {
-        errors.video = '3D Movieを入力してください。'
+        errors.video = '3D Movieファイルは必ず入力してください。'
       }
       if (this.form.type == 1 && !this.form.gpx) {
-        errors.gpx = 'GPXデータを入力してください。'
+        errors.gpx = 'GPXファイルは必ず入力してください。'
       }
-      if (this.form.type != 1 && !this.form.image) {
-        errors.image = '画像を入力してください。'
+      if (this.form.type == 2 && !this.form.image) {
+        errors.image = 'Still Imageファイルは必ず入力してください。'
+      }
+      if (this.form.type == 3 && !this.form.image) {
+        errors.image = 'Panorama Imageファイルは必ず入力してください。'
       }
       this.form.errors = errors
       if (Object.keys(errors).length > 0) {
@@ -166,10 +167,17 @@ export default {
       }
       console.log('this.uploadd_status', this.upload_status)
     },
+    onPreview() {
+      if (this.onValidate()) {
+        this.$emit('preview');
+      }
+    },
     onSubmit() {
-      // if (this.onValidate()) {
-      //   this.$emit('preview')
-      // }
+      this.form.submit(this.method, this.action, {
+        onSuccess: () => {
+          // router.visit('/people')
+        },
+      })
     },
   },
   computed: {

@@ -43,33 +43,52 @@ class MediaController extends Controller
 
     public function store(MediaUpdateRequest $request)
     {
-        $data = $request->only([
-            'name', 
-            'type', 
-            'url', 
-            'gpx_url', 
-            'length', 
-            'image_lat', 
-            'image_long'
-        ]);
+        try {
+            $input = $request->only([
+                'name',
+                'video',
+                'image',
+                'gpx',
+                'type',
+                'image_lat',
+                'image_long',
+            ]);
 
-        $media = Media::create($data)->delete();
+            $data = [
+                'name' => $input['name'],
+                'image_lat' => $input['image_lat'],
+                'image_long' => $input['image_long'],
+            ];
 
-        return back()->with([
-            'success' => true,
-            "data" => $media
-        ]);
+            if($input['type'] == 1) {
+                $this->s3service->fileMovieFromTmp($input['video']['file_name']);
+                $this->s3service->fileMovieFromTmp($input['gpx']['file_name']);
+                $data['media_path'] = $input['video']['file_name'];
+                $data['video_duration'] = $input['video']['video_duration'];
+                $data['gpx_path'] = $input['gpx']['file_name'];
+            } else {
+                $this->s3service->fileMovieFromTmp($input['image']['file_name']);
+                $data['media_path'] = $input['image']['file_name'];
+            }
+
+            Media::create($data);
+
+            return back()->with(['success' => __("success_update")]);
+
+        } catch (\Throwable $exception) {
+            \Log::error($exception);
+            return back()->with(['error' => __("success_error")], 500);
+        }
     }
 
     public function createPresignedUrl(Request $request) 
     {
         try {
             $file_extension = $request->input('extension');
-            $file_content_type = $request->input('type');
             $file_name = Str::uuid() . "." . $file_extension;
             $file_path = "tmp/" . $file_name;
             
-            $presignedUrl = $this->s3service->createPresignedUrl($file_path, $file_content_type);
+            $presignedUrl = $this->s3service->createPresignedUrl($file_path);
             return response()->json([
                 "success" => __("success_complete"),
                 'presigned_url' => $presignedUrl,

@@ -24,9 +24,14 @@ class MediaUpdateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'type' => ["required", "in:" . implode(",", array_column(config('values.enums.media_types'), 'value'))],
-            'url' => ['required', 'string', 'max:255'],
-            'gpx_url' => ['nullable', 'required_if:type=1', 'string', 'max:255'], // movie
-            'video_time' => ['nullable', 'required_if:type=1'] // movie
+            'video' => ['nullable', 'required_if:type,1'], // movie,
+            'gpx' => ['nullable', 'required_if:type,1'], // gpx,
+            'image' => ['nullable', 'required_unless:type,1'], // image,
+            'image_lat' => ['nullable'],
+            'image_long' => ['nullable'],
+            'origin_video_path' => ['nullalbe'],
+            'origin_image_path' => ['nullalbe'],
+            'origin_gpx_path' => ['nullalbe'],
         ];
     }
 
@@ -37,12 +42,18 @@ class MediaUpdateRequest extends FormRequest
      */
     public function attributes()
     {
-        return [
+        $attributes = [
             'name' => 'メディア名',
             'type' => 'メディア種別',
-            'url' => 'メディアファイル',
-            'gpx_url' => 'GPXファイル',
+            'video' => '3DMovieファイル',
+            'gpx' => 'GPXファイル',
         ];
+        if($this->type == 2) {
+            $attributes['image'] = 'Still Imageファイル';
+        } else if($this->type == 3) {
+            $attributes['image'] = 'Panorama Imageファイル';
+        }
+        return $attributes;
     }
 
     /**
@@ -53,6 +64,7 @@ class MediaUpdateRequest extends FormRequest
     public function messages()
     {
         return [
+            'required_if' => ':attributeは必ず入力してください。',
         ];
     }
 }

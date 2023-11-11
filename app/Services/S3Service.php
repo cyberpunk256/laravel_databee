@@ -64,6 +64,23 @@ class S3Service
         return true;
     }
 
+    public function fileMovieFromTmp($file_name) 
+    {
+        $file_path = "tmp/" . $file_name;
+        // ファイルをコピー
+        $this->s3client->copyObject([
+            'Bucket' => config('filesystems.disks.s3.bucket'),
+            'CopySource' => $file_path,
+            'Key' => $file_name,
+        ]);
+    
+        // 元のファイルを削除
+        $this->s3client->deleteObject([
+            'Bucket' => config('filesystems.disks.s3.bucket'),
+            'Key' => $file_path,
+        ]);
+    }
+
     public function getList()
     {
         $list = $this->s3client->listObjects([
@@ -72,17 +89,17 @@ class S3Service
         return $list['Contents'];
     }
 
-    public function getFile(String $path) 
-    {
-        $result = $this->s3client->getObject([
-            'Bucket' => config('filesystems.disks.s3.bucket'),
-            'Key' => $path,
-        ]);
+    // public function getFile(String $path) 
+    // {
+    //     $result = $this->s3client->getObject([
+    //         'Bucket' => config('filesystems.disks.s3.bucket'),
+    //         'Key' => $path,
+    //     ]);
 
-        // Get the contents of the file
-        $fileContent = $result['Body']->getContents();
+    //     // Get the contents of the file
+    //     $fileContent = $result['Body']->getContents();
 
-        // You can then do something with $fileContent, like return it as a response
-        return response($fileContent, 200)->header('Content-Type', $result['ContentType']);
-    }
+    //     // You can then do something with $fileContent, like return it as a response
+    //     return response($fileContent, 200)->header('Content-Type', $result['ContentType']);
+    // }
 }

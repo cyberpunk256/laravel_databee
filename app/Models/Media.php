@@ -16,7 +16,7 @@ class Media extends Model
         'admin_id',
         'name',
         'type',
-        'video_time',
+        'video_duration',
         'media_path',
         'gpx_path',
         'image_lat',

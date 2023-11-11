@@ -1,9 +1,12 @@
 import 'vue-toastification/dist/index.css'
+import { Head, Link, useForm, router } from '@inertiajs/vue3'
 import { useToast } from "vue-toastification"
 const toast = useToast()
 
 export default {
-    data: () => ({}),
+    data: () => ({
+        dataForm: useForm({})
+    }),
     computed: {
         user() {
             return this.$page.props.auth.user

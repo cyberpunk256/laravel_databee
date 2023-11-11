@@ -35,8 +35,10 @@ const breadcrumbs = ref([
       </v-col>
     </v-row>
     <Form 
-      :data="data" 
       :tab="tab"
+      :method="method"
+      :data="data"
+      :action="action"
       @preview="onChangeTab"
       ></Form>
   </AdminLayout>
@@ -47,21 +49,29 @@ import { Head, Link, useForm, router } from '@inertiajs/vue3'
 export default {
   data() {
     return {
-      tab: 'map',
+      tab: 'form',
+      method: 'post',
+      action: '/admin/media',
       data: {
         name: null,
+        video: null,
+        image: null,
+        gpx: null,
         type: 1, // 3d video
-        video_time: null,
-        media_path: null,
-        gpx_path: null,
         image_lat: null,
         image_long: null,
+        origin_video_path: null,
+        origin_image_path: null,
+        origin_gpx_path: null,
       }
     }
   },
   mounted() {
+    this.onInit()
   },
   methods: {
+    onInit() {
+    },
     onSubmit() {
       form.post('/admin/user', {
         onSuccess: () => {

@@ -51,6 +51,7 @@ export default {
       file_extension: null,
       file_path: null,
       file_name: null,
+      video_duration: null,
       dropzone: null
     }
   },
@@ -76,6 +77,7 @@ export default {
         if(data.success) {
           self.file_path = data.file_path
           self.file_name = data.file_name
+          self.video_duration = data.video_duration
           self.dropzone.options.url = data.presigned_url
           console.log('files', self.dropzone.files)
           if(self.dropzone.files.length > 0) {
@@ -117,10 +119,28 @@ export default {
           this.removeFile(this.files[0]);
         }
         const extension = file.name.split('.').pop().toLowerCase()
-        self.init_presigned_upload({
-          extension: extension,
-          type: file.type
-        })
+        if(file.type.indexOf('video') > -1) {
+          const video = document.createElement('video');
+          video.src = URL.createObjectURL(file);
+
+          // Listen for the 'loadedmetadata' event to get the duration
+          video.addEventListener('loadedmetadata', function() {
+            self.init_presigned_upload({
+              extension: extension,
+              type: file.type,
+              video_duration: video.duration
+            })
+            video.parentNode.removeChild(video);
+            URL.revokeObjectURL(video.src);
+          });
+          video.load();
+        } else {
+          self.init_presigned_upload({
+            extension: extension,
+            type: file.type,
+            video_duration: null
+          })
+        }
       });
 
       this.dropzone.on("removedFile", function(file) {
@@ -134,6 +154,7 @@ export default {
         self.$emit('success', {
           file_path: self.file_path,
           file_name: self.file_name,
+          video_duration: self.video_duration
         })
       });
 
