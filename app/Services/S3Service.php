@@ -70,8 +70,8 @@ class S3Service
         // ファイルをコピー
         $this->s3client->copyObject([
             'Bucket' => config('filesystems.disks.s3.bucket'),
-            'CopySource' => $file_path,
             'Key' => $file_name,
+            'CopySource' => config('filesystems.disks.s3.bucket') . "/" . $file_path,
         ]);
     
         // 元のファイルを削除

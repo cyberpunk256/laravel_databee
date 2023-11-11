@@ -4,14 +4,15 @@
       <template v-if="type == 'video' && origin">
         <three-video-player 
           v-if="origin" 
-          :url="origin"
+          :url="get_path_url(origin)"
+          class="vp_form_preview"
         />
       </template>
       <template v-if="type == 'image' && origin">
         <v-img
           :width="300"
           contain
-          src="origin"
+          :src="get_path_url(origin)"
         ></v-img>
       </template>
       <template v-if="type == 'panorama' && origin">
@@ -19,7 +20,7 @@
           :width="300"
           aspect-ratio="16/9"
           cover
-          src="origin"
+          :src="get_path_url(origin)"
         ></v-img>
       </template>
     </template>
@@ -77,8 +78,8 @@ export default {
         if(data.success) {
           self.file_path = data.file_path
           self.file_name = data.file_name
-          self.video_duration = data.video_duration
           self.dropzone.options.url = data.presigned_url
+          self.video_duration = params.video_duration
           console.log('files', self.dropzone.files)
           if(self.dropzone.files.length > 0) {
             self.$emit('status', true)
@@ -119,7 +120,7 @@ export default {
           this.removeFile(this.files[0]);
         }
         const extension = file.name.split('.').pop().toLowerCase()
-        if(file.type.indexOf('video') > -1) {
+        if(file.type.indexOf('video/') > -1) {
           const video = document.createElement('video');
           video.src = URL.createObjectURL(file);
 

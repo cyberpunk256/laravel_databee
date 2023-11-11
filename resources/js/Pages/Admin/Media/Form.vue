@@ -20,7 +20,7 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
         />
         <template v-if="form.type == 1">
           <S3FileUpload
-            :origin="origin_video_path"
+            :origin="form.origin_video_path"
             :error="form.errors.video"
             type="video"
             @success="value => onFileUploaded('video', value)"
@@ -30,7 +30,7 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
             class="mt-2"
           />
           <S3FileUpload
-            :origin="origin_gpx_path"
+            :origin="form.origin_gpx_path"
             :error="form.errors.gpx"
             type="gpx"
             @success="value => onFileUploaded('gpx', value)"
@@ -42,7 +42,7 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
         </template>
         <template v-else>
           <S3FileUpload
-            :origin="origin_image_path"
+            :origin="form.origin_image_path"
             :error="form.errors.media"
             :type="form.type == 2 ? 'image' : 'panorama'"
             @success="value => onFileUploaded('image', value)"
@@ -88,7 +88,7 @@ import { Head, Link, useForm, router } from '@inertiajs/vue3'
 export default {
   watch: {
   },
-  props: ['tab', 'method', 'data', 'action'],
+  props: ['tab', 'method', 'record', 'action'],
   data() {
     return {
       form: useForm({
@@ -105,6 +105,7 @@ export default {
       }),
       modal: false,
       upload_status: {
+        submit: false,
         video: false,
         image: false,
         gpx: false,
@@ -112,20 +113,24 @@ export default {
     }
   },
   mounted() {
-    this.form = useForm({
-      name: this.data.name,
-      video: null,
-      image: null,
-      gpx: null,
-      type: this.data.type,
-      image_lat: this.data.image_lat,
-      image_long: this.data.image_long,
-    })
-    if(this.data.type == 1) { // video 
-      this.form.origin_video_path = this.data.media_path
-      this.form.origin_gpx_path = this.data.gpx_path
-    } else {
-      this.form.origin_image_path = this.data.media_path
+    if(this.record) {
+      console.log('record', this.record);
+      this.form = useForm({
+        name: this.record.name,
+        video: null,
+        image: null,
+        gpx: null,
+        type: this.record.type,
+        image_lat: this.record.image_lat,
+        image_long: this.record.image_long,
+      })
+      if(this.record.type == 1) { // video 
+        this.form.origin_video_path = this.record.media_path
+        this.form.origin_gpx_path = this.record.gpx_path
+      } else {
+        this.form.origin_image_path = this.record.media_path
+      }
+      console.log('this.form', this.form);
     }
   },
   methods: {
@@ -173,16 +178,20 @@ export default {
       }
     },
     onSubmit() {
+      const self = this
       this.form.submit(this.method, this.action, {
         onSuccess: () => {
-          // router.visit('/people')
+          router.visit('/admin/media')
         },
+        onFinish: () => {
+          self.show_toast();
+        }
       })
     },
   },
   computed: {
     computedPreviewStatus() {
-      if(this.upload_status.video || this.upload_status.image || this.upload_status.gpx) {
+      if(this.upload_status.video || this.upload_status.image || this.upload_status.gpx || this.upload_status.submit) {
         return true;
       } else {
         return false;

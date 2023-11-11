@@ -5,7 +5,6 @@ const toast = useToast()
 
 export default {
     data: () => ({
-        dataForm: useForm({})
     }),
     computed: {
         user() {
@@ -35,6 +34,10 @@ export default {
         get_path_url(path) {
             console.log('path', this.bucket_path  + path)
             return this.bucket_path + path
+        },
+        getTextOfOption(options, value) {
+            const option = options.find(x => x.value == value)
+            return option ? option.text : null;
         },
     }
 };

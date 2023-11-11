@@ -34,33 +34,35 @@ import { Head, Link } from '@inertiajs/vue3'
         :loading="isLoadingTable"
         @update:options="loadItems"
       >
-        <template #[`item.gender`]="{ item }">{{ item.columns.gender == 'male' ? 'Male' : 'Female' }}</template>
+        <template #[`item.admin_name`]="{ item }">
+          {{ item.raw.admin.name }}
+          </template>
+        <template #[`item.type`]="{ item }">
+          {{ getTextOfOption(type_options, item.columns.type) }}
+          </template>
+        <template #[`item.status`]="{ item }">
+          <v-switch 
+            color="primary" 
+            inset
+            hide-details
+            v-model="item.columns.status" 
+            :true-value="1"
+            :false-value="0"
+            @change="onChangeStatus(item.columns.id)"
+          ></v-switch>
+        </template>
         <template #[`item.action`]="{ item }">
           <Link :href="`/admin/media/${item.value}/edit`" as="button">
-            <v-icon color="warning" icon="mdi-pencil" size="small" />
+            <v-btn color="warning" icon="mdi-pencil" size="small" />
           </Link>
-          <v-icon class="ml-2" color="error" icon="mdi-delete" size="small" @click="deleteItem(item)" />
         </template>
       </v-data-table-server>
     </v-card>
-    <v-row justify="center">
-      <v-dialog v-model="deleteDialog" persistent width="auto">
-        <v-card>
-          <v-card-text>本当に削除しますか？</v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn color="error" text @click="deleteDialog = false">キャンセル</v-btn>
-            <v-btn color="primary" :loading="isLoading" text @click="submitDelete">削除</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-row>
   </AdminLayout>
 </template>
 
 <script>
 export default {
-  name: 'PeopleIndex',
   props: {
     data: {
       type: Object,
@@ -69,12 +71,13 @@ export default {
   data() {
     return {
       headers: [
-        { title: 'ID', key: 'id' },
-        { title: 'メディア名', key: 'name' },
-        { title: '投稿者', key: 'email' },
-        { title: '投稿日', key: 'updated_at' },
-        { title: '種別', key: 'type' },
-        { title: '有効', key: 'deleted_at', sortable: false },
+        { title: 'ID', key: 'id', sortable: false },
+        { title: 'メディア名', key: 'name', sortable: false },
+        { title: '投稿者', key: 'admin_name', sortable: false },
+        { title: '投稿日', key: 'updated_at', sortable: false },
+        { title: '種別', key: 'type', sortable: false },
+        { title: '有効', key: 'status', sortable: false },
+        { title: '', key: 'action', sortable: false },
       ],
       breadcrumbs: [
         {
@@ -85,10 +88,14 @@ export default {
       isLoadingTable: false,
       search: null,
       deleteDialog: false,
-      isLoading: false,
       deleteId: null,
+      type_options: []
     }
   },
+  mounted() {
+    this.type_options = this.enums.media_types
+    console.log('this.type_options', this.type_options)
+  }, 
   methods: {
     loadItems({ page, itemsPerPage, sortBy, search }) {
       this.isLoadingTable = true
@@ -108,19 +115,16 @@ export default {
         },
       })
     },
-    deleteItem(item) {
-      this.deleteId = item.value
-      this.deleteDialog = true
-    },
-    submitDelete() {
-      this.isLoading = true
-      this.$inertia.delete(`/admin/media/${this.deleteId}`, {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-          this.isLoading = false
-          this.deleteDialog = false
-        },
+    onChangeStatus(id) {
+      const self = this
+      this.isLoadingTable = true
+      this.$inertia.post(`/admin/media/${id}/update_status`, {
+        value: 3
+      }, {
+        onFinish: () => {
+          self.isLoadingTable = false
+          self.show_toast();
+        }
       })
     },
   },

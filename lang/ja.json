@@ -787,9 +787,9 @@
     "Åland Islands": "オーランド諸島",
     "You must :linkOpen verify :linkClose your email first.": "まず、メールアドレスを:linkOpen認証:linkCloseする必要があります。",
     "Failed Access": "アクセスできません。",
-    "success_save": "保存されました。",
-    "success_update": "更新されました。",
-    "success_delete": "削除されました。",
+    "success_save": "登録しました。",
+    "success_update": "更新しました。",
+    "success_delete": "削除しました。",
     "success_fail": "操作が失敗しました。",
     "success_error": "エラーが発生しました。",
     "success_complete": "操作が成功しました。"

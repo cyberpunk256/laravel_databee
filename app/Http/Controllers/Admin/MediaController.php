@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Http\Requests\Admin\MediaUpdateRequest;
 
 use App\Services\S3Service;
+use Ramsey\Uuid\Type\Integer;
 
 class MediaController extends Controller
 {
@@ -23,11 +25,22 @@ class MediaController extends Controller
 
     public function index(Request $request)
     {
-        $query = Media::query()->when($request->get('search'), function ($query, $search) {
-            return $query->where('name', 'LIKE', "%$search%");
-        })->when($request->get('sort'), function ($query, $sortBy) {
-            return $query->orderBy($sortBy['key'], $sortBy['order']);
-        });
+        $query = Media::query()
+            ->withTrashed()
+            ->select('*')
+            ->with([
+                'admin' => function($sub_query) {
+                    $sub_query->select('id', 'name');
+                }
+            ])
+            ->addSelect(\DB::raw("
+                CASE WHEN deleted_at IS NULL THEN 1 ELSE 0 END as status
+            "))
+            ->when($request->get('search'), function ($query, $search) {
+                return $query->where('name', 'LIKE', "%$search%");
+            })->when($request->get('sort'), function ($query, $sortBy) {
+                return $query->orderBy($sortBy['key'], $sortBy['order']);
+            });
 
         $data = $query->paginate($request->get('limit', 10));
 
@@ -41,9 +54,28 @@ class MediaController extends Controller
         return Inertia::render('Admin/Media/Create');
     }
 
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $media = Media::withTrashed()->find($id);
+            if($media->trashed()) {
+                $media->restore();
+            } else {
+                $media->delete();
+            }
+
+            return back()->with(['success' => __("success_update")]);
+
+        } catch (\Throwable $exception) {
+            \Log::error($exception);
+            return back()->with(['error' => __("success_error")], 404);
+        }
+    }
+
     public function store(MediaUpdateRequest $request)
     {
         try {
+            $admin = Auth::guard('admin')->user();
             $input = $request->only([
                 'name',
                 'video',
@@ -55,6 +87,7 @@ class MediaController extends Controller
             ]);
 
             $data = [
+                'admin_id' => $admin->id,
                 'name' => $input['name'],
                 'image_lat' => $input['image_lat'],
                 'image_long' => $input['image_long'],
@@ -73,12 +106,20 @@ class MediaController extends Controller
 
             Media::create($data);
 
-            return back()->with(['success' => __("success_update")]);
+            return back()->with(['success' => __("success_save")]);
 
         } catch (\Throwable $exception) {
             \Log::error($exception);
-            return back()->with(['error' => __("success_error")], 500);
+            return back()->with(['error' => __("success_error")], 404);
         }
+    }
+
+    public function edit($id)
+    {
+        $media = Media::withTrashed()->find($id);
+        return Inertia::render('Admin/Media/Edit', [
+            'record' => $media
+        ]);
     }
 
     public function createPresignedUrl(Request $request) 
@@ -99,7 +140,7 @@ class MediaController extends Controller
             \Log::error($exception);
             return response()->json([
                 "error" => __('success_error')
-            ], 500);
+            ], 404);
         }
     }
 
@@ -120,7 +161,7 @@ class MediaController extends Controller
             \Log::error($exception);
             return response()->json([
                 "error" => __('success_error')
-            ], 500);
+            ], 404);
         }
     }
 }

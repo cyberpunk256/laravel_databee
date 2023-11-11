@@ -37,7 +37,7 @@ const breadcrumbs = ref([
     <Form 
       :tab="tab"
       :method="method"
-      :data="data"
+      :data="null"
       :action="action"
       @preview="onChangeTab"
       ></Form>
@@ -51,34 +51,12 @@ export default {
     return {
       tab: 'form',
       method: 'post',
-      action: '/admin/media',
-      data: {
-        name: null,
-        video: null,
-        image: null,
-        gpx: null,
-        type: 1, // 3d video
-        image_lat: null,
-        image_long: null,
-        origin_video_path: null,
-        origin_image_path: null,
-        origin_gpx_path: null,
-      }
+      action: '/admin/media'
     }
   },
   mounted() {
-    this.onInit()
   },
   methods: {
-    onInit() {
-    },
-    onSubmit() {
-      form.post('/admin/user', {
-        onSuccess: () => {
-          router.visit('/admin/user')
-        },
-      })
-    },
     onChangeTab() {
       this.tab = 'map'
     }
