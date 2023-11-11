@@ -24,11 +24,12 @@ class S3Service
         ]);
     }
     
-    public function createPresignedUrl(String $path, String $content_type)
+    public function createPresignedUrl(String $path)
     {
         $cmd = $this->s3client->getCommand('PutObject', [
             'Bucket' => config('filesystems.disks.s3.bucket'),
             'Key' => $path,
+            // 'ACL' => 'public-read'
         ]);
 
         $presignedUrl = $this->s3client
@@ -38,11 +39,11 @@ class S3Service
         return $presignedUrl;
     }
 
-    public function getPresignedUrl(String $path, String $content_type)
+    public function getPresignedUrl(String $path)
     {
         $cmd = $this->s3client->getCommand('GetObject', [
             'Bucket' => config('filesystems.disks.s3.bucket'),
-            'Key' => $path,
+            'Key' => $path
         ]);
 
         $presignedUrl = $this->s3client

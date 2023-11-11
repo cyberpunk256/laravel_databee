@@ -1,21 +1,17 @@
 <template>
   <v-app class="bg-grey-lighten-4">
-    <!-- <div id="map" class="m_map">
-    </div> -->
-    <video width="1000" height="500" controls>
-        <source src="https://3d-videos-new.s3.ap-northeast-1.amazonaws.com/tmp/test_minvideo_2mbyte.mp4?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAWY3UZSKFESTL7VMH%2F20231110%2Fap-northeast-1%2Fs3%2Faws4_request&X-Amz-Date=20231110T152159Z&X-Amz-SignedHeaders=host&X-Amz-Expires=1800&X-Amz-Signature=944d508d292bff603c3c6a826ec2e8621d2c7ddbf6b6ef8e95dd6240b1aa4393"  type="video/mp4"/>
-    </video>
+    <div id="map" class="user_map">
+    </div>
     <v-dialog
       v-model="modal"
       width="auto"
     >
-      <v-card>
-        <v-card-text>
-          <three-video-player/>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn color="primary" @click="modal = false">クローズ</v-btn>
-        </v-card-actions>
+      <v-card class="vp_card">
+        <three-video-player 
+          :capture="true"
+          :url="get_path_url('tmp/4d1284cc-f89e-422a-8380-25c17e21db2f.mp4')"
+        />
+        <v-btn icon="mdi-close" @click="modal = false" class="vp_close"></v-btn>
       </v-card>
     </v-dialog>
   </v-app>
@@ -24,34 +20,35 @@
 <script>
 import L from 'leaflet';
 import 'leaflet-gpx';
-import ThreeVideoPlayer from '@/Components/ThreeVideoPlayer.vue';
+import ThreeVideoPlayer from '@/Components/Admin/ThreeVideoPlayer.vue';
+import Panorama from '@/Components/Admin/Panorama.vue';
 
 export default {
-  created () {
-  },
-  components: { ThreeVideoPlayer },
-  props: {
-  },
+  components: { ThreeVideoPlayer, Panorama },
+  // props: ['type', 'items'],
+  props: ['type'],
   data() {
     return {
       map: null,
       zoom: 2,
       center: [47.41322, -1.219482],
       modal: false,
-      modalVideo: null,
-      gpxs: [
+      modal_vp_url: null,
+      modal_image_url: null,
+      items: [
         {
-          url: "demo.gpx",
-          video: "demo.mp4"
-        },
+          type: 1,
+          vp_path: "tmp/4d1284cc-f89e-422a-8380-25c17e21db2f.mp4",
+          gpx_path: "tmp/b5f944ef-efb6-4518-b212-f2cc377d78e4.gpx"
+        }
       ],
       view: [36.2048, 138.2529],
       gpxOptions: {
         async: true,
         marker_options: {
-          startIconUrl: 'pin-icon-start.png',
-          endIconUrl:   'pin-icon-end.png',
-          shadowUrl:    'pin-shadow.png',
+          startIconUrl: '/pin-icon-start.png',
+          endIconUrl:   '/pin-icon-end.png',
+          shadowUrl:    '/pin-shadow.png',
         },
         gpx_options: {
             joinTrackSegments: false
@@ -60,19 +57,23 @@ export default {
     };
   },
   mounted() {
-    // const self = this
-    // self.map = L.map('map').setView(this.view,6);
-    // L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //   attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
-    // }).addTo(self.map)
-    // for (let i = 0; i < self.gpxs.length; i++) {
-    //   const item = self.gpxs[i];
-    //   new L.GPX(item.url, this.gpxOptions)
-    //     .on('loaded', self.onLoaded)
-    //     .on('click', function() {
-    //       self.onShowModal(item)
-    //     });
-    // }
+    const self = this
+    self.map = L.map('map').setView(this.view,6);
+    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
+    }).addTo(self.map)
+    for (let i = 0; i < self.items.length; i++) {
+      const item = self.items[i];
+      if(item.type == 1) { // video
+        const gpx_url = self.get_path_url(item.gpx_path)
+        console.log('gpx_url', gpx_url)
+        new L.GPX(gpx_url, this.gpxOptions)
+          .on('loaded', self.onLoaded)
+          .on('click', function() {
+              self.onShowModal(item)
+          });
+      }
+    }
   },
   methods: {
     onLoaded(e) {
@@ -80,8 +81,13 @@ export default {
       e.target.addTo(this.map);
     },
     onShowModal(item) {
-      this.modal = true
-      this.modalVideo = item.video
+      if(item.type == 1) {
+        this.modal_vp_url = this.get_path_url(item.vp_path)
+        this.modal = true
+      } else { // image, panorama
+        self.modal_image_url = this.get_path_url(item.image_path)
+        this.modal = true
+      }
     }
   },
 };

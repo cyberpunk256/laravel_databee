@@ -67,8 +67,7 @@ class MediaController extends Controller
             $file_extension = $request->input('extension');
             $file_content_type = $request->input('type');
             $file_name = Str::uuid() . "." . $file_extension;
-            // $file_path = "tmp/" . $file_name;
-            $file_path = "tmp/test_minvideo_2mbyte_2.mp4";
+            $file_path = "tmp/" . $file_name;
             
             $presignedUrl = $this->s3service->createPresignedUrl($file_path, $file_content_type);
             return response()->json([
@@ -85,7 +84,7 @@ class MediaController extends Controller
         }
     }
 
-    public function postUpload(Request $request) 
+    public function fileUpload(Request $request) 
     {
         try {
             $file = $request->file('file');

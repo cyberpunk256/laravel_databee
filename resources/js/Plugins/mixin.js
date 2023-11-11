@@ -14,6 +14,9 @@ export default {
         flash() {
             return this.$page.props.flash
         },
+        bucket_path() {
+            return this.$page.props.bucket_path
+        }
     },
     methods: {
         show_toast() {
@@ -26,8 +29,9 @@ export default {
                 toast.error("エラーが発生しました。", { timeout: 1000 });
             }
         },
-        get_file(path) {
-            return `/api/get_file?path=${path}`
+        get_path_url(path) {
+            console.log('path', this.bucket_path  + path)
+            return this.bucket_path + path
         },
     }
 };

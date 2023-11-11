@@ -47,7 +47,7 @@ import { Head, Link, useForm, router } from '@inertiajs/vue3'
 export default {
   data() {
     return {
-      tab: 'form',
+      tab: 'map',
       data: {
         name: null,
         type: 1, // 3d video

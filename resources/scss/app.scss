@@ -1,17 +1,12 @@
 @import "dropzone/dist/dropzone.css";
 @import "leaflet/dist/leaflet.css";
-.m_map {
+.admin_map {
     position: relative;
     width: 100%;
-    height: calc(100vh - 180px);
+    height: calc(100vh - 250px);
     max-height: 100%;
 }
-.upload_map {
-  position: relative;
-  max-width: 100%;
-  height: 100%;
-}
-.video_wrap {
+.vp_wrap {
   width: 1000px;
   max-width: calc(100vw - 40px);
   height: calc(100vh - 200px);
@@ -20,18 +15,24 @@
   &>div {
     display: none;
   }
-  .video_controls {
+  .vp_controls {
       display: block;
       position: absolute;
       bottom: 20px;
       left: 0;
       right: 0;
       text-align: center;
+      .vp_progress {
+        .v-progress-linear {
+          cursor: pointer;
+        }
+      }
   }
 }
-.video_card {
+.vp_card {
   overflow: visible !important;
-  .video_close {
+  position: relative;
+  .vp_close {
     position: absolute;
     right: 0;
     top: 0;
@@ -40,6 +41,14 @@
   }
 }
 .dropzon_wrap {
+  .dropzone {
+      background: white;
+      border-radius: 5px;
+      border: 2px dashed rgb(0, 135, 247);
+      border-image: none;
+      margin-left: auto;
+      margin-right: auto;
+  }
   .dz-upload {
     text-align: center;
     font-size: 0.8em;
@@ -80,28 +89,10 @@
   // }
 }
 
-.video_controls button {
-  margin: 5px;
-  padding: 5px 10px;
-  cursor: pointer;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 5px;
-  background: #ccc;
-  position: relative;
-}
-
-.progress {
-  height: 100%;
-  background: #0f8;
-}
-.dropzone {
-    background: white;
-    border-radius: 5px;
-    border: 2px dashed rgb(0, 135, 247);
-    border-image: none;
-    margin-left: auto;
-    margin-right: auto;
+.user_map  {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
 }

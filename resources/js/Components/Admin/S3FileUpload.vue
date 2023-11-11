@@ -1,13 +1,20 @@
 <template>
   <div class="dropzon_wrap">
     <template v-if="origin">
-      <template v-if="type == 'video'">
+      <template v-if="type == 'video' && origin">
         <three-video-player 
           v-if="origin" 
-          :video="origin"
+          :url="origin"
         />
       </template>
-      <template v-if="type == 'image'">
+      <template v-if="type == 'image' && origin">
+        <v-img
+          :width="300"
+          contain
+          src="origin"
+        ></v-img>
+      </template>
+      <template v-if="type == 'panorama' && origin">
         <v-img
           :width="300"
           aspect-ratio="16/9"
@@ -28,14 +35,18 @@
 
 <script>
 import Dropzone from "dropzone";
+import ThreeVideoPlayer from '@/Components/Admin/ThreeVideoPlayer.vue';
+import Panorama from '@/Components/Admin/Panorama.vue';
+
 
 export default {
+  watch: {
+  },
   props: [ 'type', 'label', 'error', 'origin' ],
+  components: { ThreeVideoPlayer, Panorama },
   data() {
     return {
-      upload_url: "/admin/media/upload",
-      method: "post",
-      auto_process_queue: false,
+      upload_url: "/admin/media/file_upload",
       accepted_files: null,
       file_extension: null,
       file_path: null,
@@ -51,10 +62,8 @@ export default {
     init_data() {
       if(this.type == 'video') {
         this.accepted_files = "video/*"
-        this.method = "put";
       } else if(this.type == 'gpx') {
         this.accepted_files = ".gpx"
-        this.auto_process_queue = true
       } else { // image
         this.accepted_files = "image/*"
       }
@@ -67,7 +76,6 @@ export default {
         if(data.success) {
           self.file_path = data.file_path
           self.file_name = data.file_name
-          self.presigned_url = data.file_name
           self.dropzone.options.url = data.presigned_url
           console.log('files', self.dropzone.files)
           if(self.dropzone.files.length > 0) {
@@ -84,33 +92,22 @@ export default {
         self.dropzone.options.clickable = true;
       }
     },
-    init_file_upload() {
-      const self = this
-      if(self.dropzone.files.length > 0) {
-        self.dropzone.options.url = self.upload_url
-        setTimeout(function() {
-          self.$emit('status', true)
-          self.dropzone.processQueue();
-        }, 500)
-      }
-    },
     init_dropzone() {
       const self = this
       this.dropzone = new Dropzone(this.$refs.dropzone, {
-        url: self.upload_url,
-        method: self.method,
+        url: '/',
+        method: 'put',
         thumbnailHeight: 120,
         thumbnailWidth: 120,
         maxFilesize: 1024 * 1024 * 1024 * 10, // 10Gbyte
         maxFiles: 1,
-        // acceptedFiles: self.accepted_files,
+        binaryBody: true,
         addRemoveLinks: true,
         autoProcessQueue: false,
         dictRemoveFile: "削除",
         dictCancelUpload: "キャンセル",
-        // previewTemplate: previewTemplate,
         headers: {
-            'X-CSRF-TOKEN': self.$page.props.csrf_token
+          'X-CSRF-TOKEN': self.$page.props.csrf_token,
         }
       })
       
@@ -119,16 +116,11 @@ export default {
         if (this.files.length > 1) {
           this.removeFile(this.files[0]);
         }
-        if(self.type == 'video') {
-          const extension = file.name.split('.').pop().toLowerCase()
-          self.init_presigned_upload({
-            extension: extension,
-            type: file.type
-          })
-        }
-         else {
-          self.init_file_upload()
-        }
+        const extension = file.name.split('.').pop().toLowerCase()
+        self.init_presigned_upload({
+          extension: extension,
+          type: file.type
+        })
       });
 
       this.dropzone.on("removedFile", function(file) {
@@ -152,7 +144,8 @@ export default {
 
 
       this.dropzone.on("sending", function (file, xhr, formData) {
-        xhr.setRequestHeader("Content-Type", file.type);
+        // xhr.setRequestHeader('Content-Type', file.type);
+        // xhr.send(file);
       });
 
       this.dropzone.on("uploadprogress", function(file, progress, bytesSent) {

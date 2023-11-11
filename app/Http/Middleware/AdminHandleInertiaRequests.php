@@ -38,8 +38,9 @@ class AdminHandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            'csrf_token' => csrf_token(),
             'enums' => $enums,
-            'csrf_token' => csrf_token()
+            'bucket_path' => "https://" . config('filesystems.disks.s3.bucket') . ".s3." . config('filesystems.disks.s3.region') . "." . "amazonaws.com/",
         ]);
     }
 }

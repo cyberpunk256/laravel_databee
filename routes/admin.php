@@ -27,10 +27,9 @@ Route::middleware('guest:admin')->group(function () {
 
 Route::middleware('auth.admin')->group(function () {
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
-    Route::get('', [DashboardController::class, 'index'])->name('index');
-    Route::resource('/user', UserController::class)->except(['show']);
+    Route::get('/', [DashboardController::class, 'index'])->name('index');
+    Route::resource('user', UserController::class)->except(['show']);
     Route::post('media/new_presigned_url', [MediaController::class, 'createPresignedUrl'])->name('media.createPresignedUrl');
-    Route::post('media/upload', [MediaController::class, 'upload'])->name('media.postUpload');
-    Route::resource('/media', MediaController::class)->except(['show']);
-
+    // Route::post('media/file_upload', [MediaController::class, 'fileUpload'])->name('media.fileUpload');
+    Route::resource('media', MediaController::class)->except(['show']);
 });

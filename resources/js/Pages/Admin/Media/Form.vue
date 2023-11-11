@@ -1,6 +1,6 @@
 <script setup>
 import S3FileUpload from '@/Components/Admin/S3FileUpload.vue'
-import Map from '@/Components/Admin/Map.vue'
+import Map from '@/Pages/Admin/Media/Parts/Map.vue'
 </script>
 
 <template>
@@ -24,7 +24,7 @@ import Map from '@/Components/Admin/Map.vue'
             :error="form.errors.video"
             type="video"
             @success="value => onFileUploaded('video', value)"
-            @remove="onFileRemoved('video')"
+            @remove="onFileUploaded('video', null)"
             @status="value => onUploadStatus('video', value)"
             label="メディアファイルをアップロードしてください。"
             class="mt-2"
@@ -34,7 +34,7 @@ import Map from '@/Components/Admin/Map.vue'
             :error="form.errors.gpx"
             type="gpx"
             @success="value => onFileUploaded('gpx', value)"
-            @remove="onFileRemoved('gpx')"
+            @remove="onFileUploaded('gpx', null)"
             @status="value => onUploadStatus('video', value)"
             label="GPXファイルをアップロードしてください。"
             class="mt-2"
@@ -44,9 +44,9 @@ import Map from '@/Components/Admin/Map.vue'
           <S3FileUpload
             :origin="origin_image_path"
             :error="form.errors.media"
-            type="image"
+            :type="form.type == 2 ? 'image' : 'panorama'"
             @success="value => onFileUploaded('image', value)"
-            @remove="onFileRemoved('image')"
+            @remove="onFileUploaded('image', null)"
             @status="value => onUploadStatus('video', value)"
             label="メディアファイルをアップロードしてください。"
             class="mt-2"
@@ -66,8 +66,19 @@ import Map from '@/Components/Admin/Map.vue'
       </v-row>
     </template>
     <template v-else>
-      <!-- <Map :items="items"></Map> -->
-      <Map ></Map>
+      <!-- <Map :type="form.type" :media="computedMedia"></Map> -->
+      <Map :type="form.type"></Map>
+      <v-divider></v-divider>
+      <v-row class="py-4" justify="center">
+        <v-col cols="auto">
+          <Link href="/admin/media" as="div">
+            <v-btn text>キャンセル</v-btn>
+          </Link>
+        </v-col>
+        <v-col cols="auto">
+          <v-btn @click.stop="onSubmit" color="primary">保存する</v-btn>
+        </v-col>
+      </v-row>
     </template>
   </v-card>
 </template>
@@ -121,10 +132,8 @@ export default {
   },
   methods: {
     onFileUploaded(field, data) {
-      this.form[field] = {
-        name: data.file_name,
-        path: data.file_path,
-      }
+      this.form[field] = data
+      console.log('form',this.form)
     },
     onValidate() {
       let errors = {}
@@ -150,18 +159,18 @@ export default {
         return true
       }
     },
-    onPreview() {
-      if (this.onValidate()) {
-        this.$emit('preview')
-      }
-    },
     onUploadStatus(field, value) {
       this.upload_status = {
         ...this.upload_status,
         [field]: value
       }
       console.log('this.uploadd_status', this.upload_status)
-    }
+    },
+    onSubmit() {
+      // if (this.onValidate()) {
+      //   this.$emit('preview')
+      // }
+    },
   },
   computed: {
     computedPreviewStatus() {
@@ -171,25 +180,21 @@ export default {
         return false;
       }
     },
-    items() {
+    computedMedia() {
       if(this.form.type == 1) { // video
-        const video_path = this.form.origin_video_path ? this.form.origin_video_path : this.form.video.path
-        const gpx_path = this.form.origin_gpx_path ? this.form.origin_gpx_path : this.form.gpx.path
-        return [
-          {
-            type: 'video',
-            video_path: video_path,
-            gpx_path: gpx_path,
-          },
-        ]
+        const video_path = this.form.origin_video_path ? this.form.origin_video_path : this.form.video.file_path
+        const gpx_path = this.form.origin_gpx_path ? this.form.origin_gpx_path : this.form.gpx.file_path
+        return {
+          type: this.form.type,
+          video_path: video_path,
+          gpx_path: gpx_path,
+        }
       } else {
-        const image_path = this.form.origin_image_path ? this.form.origin_image_path : this.form.image.path
-        return [
-          {
-            type: 'image',
-            image_path: image_path,
-          },
-        ]
+        const image_path = this.form.origin_image_path ? this.form.origin_image_path : this.form.image.file_path
+        return {
+          type: this.form.type,
+          image_path: image_path,
+        }
       }
     },
   },
