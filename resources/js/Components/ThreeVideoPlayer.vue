@@ -27,9 +27,7 @@
 import { Viewer, VideoPanorama } from 'panolens';
 
 export default {
-  watch: {
-  },
-  props: ['url', 'id'],
+  props: ['url', 'id', 'time', 'nearsetLatLng'],
   data() {
     return {
       viewer: null,
@@ -45,32 +43,37 @@ export default {
     this.initVideoPlayer();
   },
   methods: {
-    initVideoPlayer() {
+    async initVideoPlayer() {
       const self = this
       // Create a viewer for the panorama
-      this.viewer = new Viewer({
-        container: this.$refs.vp_wrap,
+      self.viewer = new Viewer({
+        container: self.$refs.vp_wrap,
+        controlBar: false
       });
 
       // Create a VideoPanorama with your 360-degree video
-      this.panorama = new VideoPanorama(this.url, {
+      self.panorama = new VideoPanorama(self.url, {
         autoplay: false, // Disable auto-play for custom control handling
       });
 
       // Add the VideoPanorama to the viewer
-      this.viewer.add(this.panorama);
+      self.viewer.add(self.panorama);
+      self.viewer.controls = null;
 
       // Get a reference to the video element
-      this.video = this.panorama.getVideoElement();
-      this.video.addEventListener('timeupdate', function() {
-          // ビデオの現在の再生時間と総時間を取得
-          var currentTime = self.video.currentTime;
-          var duration = self.video.duration;
-
-          // プログレスバーの幅を更新
-          self.progress = (currentTime / duration) * 100;
+      self.video = self.panorama.getVideoElement();
+      self.video.style.display = 'none';
+      self.video.addEventListener('loadedmetadata', function(e) {
+        self.video.currentTime = self.time
       });
-
+      self.video.addEventListener('timeupdate', function() {
+        // ビデオの現在の再生時間と総時間を取得
+        var currentTime = self.video.currentTime;
+        var duration = self.video.duration;
+        // プログレスバーの幅を更新
+        self.progress = (currentTime / duration) * 100;
+      });
+      self.video.currentTime = self.time
     },
     onPause() {
       this.video.pause();
@@ -105,7 +108,11 @@ export default {
       const self = this
       try {
         this.is_capturing = true
-        const file_str = this.viewer.renderer.domElement.toDataURL();
+        const image = new Image();
+        image.src = this.viewer.renderer.domElement.toDataURL();
+        let formData = new FormData();
+        formData.append('file', image);
+        console.log("formdata'", formData)
         const camera = this.viewer.getCamera();
         const rotation_vector = camera.rotation;  // カメラの回転情報を取得
         const rotation = {
@@ -113,18 +120,30 @@ export default {
           y: rotation_vector.y,
           z: rotation_vector.z,
         }
-        const scale = camera.zoom;
+        const zoom = camera.zoom;
+        let latlng = this.nearsetLatLng(this.video.currentTime)
+        console.log('latlng', latlng)
+        latlng = latlng ? { 
+          lat: latlng.lat,
+          lng: latlng.lng,
+        } :  { 
+          lat: null,
+          lng: null,
+        }
         const params = {
           media_id: self.id,
-          file_str: file_str,
+          // file_str: file_str,
           playtime: self.video.currentTime.toFixed(2),
           rotation: JSON.stringify(rotation),
-          zoom: scale.toFixed(2),
-          lat: 35.685175,
-          long: 139.7528,
+          zoom: zoom.toFixed(2),
+          lat: latlng.lat,
+          long: latlng.lng,
         }
-        console.log('params', params)
-        const { data } = await axios.post('/api/capture/file_upload', params)
+        const { data } = await axios.post('/api/capture/file_upload', formData, {
+          headers: {
+              'Content-Type': 'multipart/form-data'
+          }
+        })
         if(data.success) {
           self.show_toast("success", data.success)
         } else {
@@ -133,8 +152,9 @@ export default {
       } catch(e) {
         console.log(e)
         self.show_toast()
+      } finally {
+        this.is_capturing  =false
       }
-
     }
   },
 };

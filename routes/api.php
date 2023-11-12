@@ -20,7 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/user', function (Request $request) {
     //     return $request->user();
     // });
-    Route::post('get_presigned_url', [S3Controller::class, 'getPresignedUrl'])->name('getPresignedUrl');
-    Route::get('get_file', [S3Controller::class, 'getFile'])->name('getFile'); 
-    Route::post('capture/file_upload', [CaptureController::class, 'fileUpload'])->name('media.fileUpload');
+    Route::get('capture', [CaptureController::class, 'index'])->name('capture.index');
+    Route::post('capture/file_upload', [CaptureController::class, 'fileUpload'])->name('capture.fileUpload');
+    Route::post('capture/delete_records ', [CaptureController::class, 'deleteRecords'])->name('capture.deleteRecords');
 });

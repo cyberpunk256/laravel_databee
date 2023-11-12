@@ -19,7 +19,6 @@ export default {
     },
     methods: {
         show_toast(status = null, message= null) {
-            console.log('flash', this.flash);
             if (this.flash.success) {
                 toast.success(this.flash.success, { timeout: 1000 });
             } else if (this.flash.error) {
@@ -35,8 +34,6 @@ export default {
             }
         },
         get_path_url(path) {
-
-            console.log('constant.bucket_path', this.constant.bucket_path + path);
             return this.constant.bucket_path + path
         },
         getTextOfOption(options, value) {

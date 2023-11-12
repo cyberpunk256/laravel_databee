@@ -181,8 +181,9 @@ class MediaController extends Controller
             $ids = $request->input('ids');
             $records_query = Media::withTrashed()
                 ->whereIn('id', $ids);
-
-            $records = (clone $records_query)->forceDelete();
+                
+            $records =  (clone $records_query)->get();
+            (clone $records_query)->forceDelete();
 
             $delete_files = [];
             foreach ($records as $record) {

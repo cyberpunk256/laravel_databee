@@ -48,6 +48,7 @@ export default {
       // Create a viewer for the panorama
       const viewer = new Viewer({
         container: this.$refs.vp_wrap,
+        controlBar: false
       });
 
       // Create a VideoPanorama with your 360-degree video
@@ -68,7 +69,6 @@ export default {
           // プログレスバーの幅を更新
           self.progress = (currentTime / duration) * 100;
       });
-
     },
     onPause() {
       this.video.pause();
