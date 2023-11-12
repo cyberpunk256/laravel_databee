@@ -29,7 +29,6 @@ class AdminHandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $enums = config('values.enums');
         return array_merge(parent::share($request), [
             'auth' => [
                 'user' => $request->user('admin'),
@@ -39,8 +38,9 @@ class AdminHandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'csrf_token' => csrf_token(),
-            'enums' => $enums,
-            'bucket_path' => "https://" . config('filesystems.disks.s3.bucket') . ".s3." . config('filesystems.disks.s3.region') . "." . "amazonaws.com/",
+            'constant' => array_merge(config('constant'), [
+                'bucket_path' => "https://" . config('filesystems.disks.s3.bucket') . ".s3." . config('filesystems.disks.s3.region') . "." . "amazonaws.com/",
+            ])
         ]);
     }
 }

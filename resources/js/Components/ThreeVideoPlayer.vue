@@ -27,12 +27,18 @@
 import { Viewer, VideoPanorama } from 'panolens';
 
 export default {
+  watch: {
+  },
   props: ['url', 'capture'],
   data() {
     return {
+      viewer: null,
       panorama: null,
       isPlaying: false,
       progress: 0,
+      disabled: false,
+      step: 2,
+      is_capturing: false
     };
   },
   mounted() {
@@ -40,8 +46,9 @@ export default {
   },
   methods: {
     initVideoPlayer() {
+      const self = this
       // Create a viewer for the panorama
-      const viewer = new Viewer({
+      this.viewer = new Viewer({
         container: this.$refs.vp_wrap,
       });
 
@@ -51,31 +58,74 @@ export default {
       });
 
       // Add the VideoPanorama to the viewer
-      viewer.add(panorama);
+      this.viewer.add(panorama);
 
       // Get a reference to the video element
       this.video = panorama.getVideoElement();
+      this.video.addEventListener('timeupdate', function() {
+          // ビデオの現在の再生時間と総時間を取得
+          var currentTime = self.video.currentTime;
+          var duration = self.video.duration;
+
+          // プログレスバーの幅を更新
+          self.progress = (currentTime / duration) * 100;
+      });
+
     },
-    onTogglePlay() {
-      if (this.isPlaying) {
-        this.video.pause();
-      } else {
-        this.video.play();
+    onPause() {
+      this.video.pause();
+      this.isPlaying = false;
+    },
+    async onPlay() {
+      try {
+        await this.video.play();
+        this.isPlaying = true
+      } catch(e) {
+        console.log(e)
       }
-      this.isPlaying = !this.isPlaying;
     },
-    seekTo(event) {
-      const video = this.panorama.getVideoElement();
+    onRewind() {
+      this.video.currentTime = this.video.currentTime < this.step ? 0 : this.video.currentTime - this.step;
+    },
+    onFast() {
+      this.video.currentTime = this.video.duration - this.video.currentTime < this.step ? 
+        this.video.duration : this.video.currentTime + this.step;
+    },
+    onSeekTo(event) {
       const boundingRect = event.currentTarget.getBoundingClientRect();
       const clickX = event.clientX - boundingRect.left;
       const fullWidth = boundingRect.width;
       const percent = (clickX / fullWidth) * 100;
       this.progress = percent;
-      console.log('video.duration', this.video.duration);
       const time = parseInt((percent / 100) * this.video.duration);
-      this.video.currentTime += 10;
-      console.log('time', video.currentTime);
+      this.video.currentTime = time;
     },
+    async onCapture() {
+      if(!this.panorama) return;
+      const self = this
+      try {
+        this.is_capturing = true
+        const file_str = this.panorama.captureFrame();
+        const camera = this.panorama.getCamera();
+        const rotation = camera.rotation.clone();  // カメラの回転情報を取得
+        const scale = camera.scale.clone();        // カメラのスケール情報を取得
+        const { data } = await axios.post('/api/capture/file_upload', {
+          file_str: file_str,
+          playtime: self.video.currentTime.toFixed(2),
+          rotation: rotation.toFixed(2),
+          scale: scale.toFixed(2)
+        })
+        if(data.success) {
+          show_toast("success", data.success)
+        } else {
+          show_toast("error", data.error)
+        }
+      } catch(e) {
+        consoe.log('e')
+          show_toast()
+      }
+
+    }
   },
 };
 </script>

@@ -1,22 +1,24 @@
 <template>
   <div>
     <div id="map" class="admin_map"></div>
-    <v-dialog v-if="type == 1 && modal_vp_url" v-model="modal" width="auto">
+    <v-dialog v-if="record.type == 1 && modal_video_url" v-model="modal" width="auto">
       <v-card class="vp_card">
         <v-btn icon="mdi-close" @click="modal = false" class="vp_close"></v-btn>
-        <three-video-player :url="modal_vp_url"/>
+        <three-video-player :url="modal_video_url"/>
       </v-card>
     </v-dialog>
-    <v-dialog v-if="type == 2 && modal_image_url" v-model="modal" width="auto">
+    <v-dialog v-if="record.type == 2 && modal_image_url" v-model="modal" width="auto">
       <v-card class="vp_card">
         <v-btn icon="mdi-close" @click="modal = false" class="vp_close"></v-btn>
-        <v-img max-width="1000" contain src="modal_image_url"></v-img>
+        <div class="vp_content">
+          <v-img width="auto" max-width="1200" contain :src="modal_image_url"></v-img>
+        </div>
       </v-card>
     </v-dialog>
-    <v-dialog v-if="type == 3 && modal_image_url" v-model="modal" width="auto">
+    <v-dialog v-if="record.type == 3 && modal_image_url" v-model="modal" width="auto">
       <v-card class="vp_card">
         <v-btn icon="mdi-close" @click="modal = false" class="vp_close"></v-btn>
-          <panorama  :url="modal_image_url"></panorama>
+          <panorama :url="modal_image_url"></panorama>
       </v-card>
     </v-dialog>
   </div>
@@ -26,52 +28,78 @@
 import L from 'leaflet';
 import 'leaflet-gpx';
 import ThreeVideoPlayer from '@/Components/Admin/ThreeVideoPlayer.vue';
-import Panorama from '@/Components/Admin/Panorama.vue';
+import Panorama from '@/Components/Panorama.vue';
 
 export default {
   components: { ThreeVideoPlayer, Panorama },
-  props: ['type', 'media'],
+  props: ['record'],
   data() {
     return {
       map: null,
-      zoom: 2,
-      center: [47.41322, -1.219482],
-      modal: false,
-      modal_vp_url: null,
-      modal_image_url: null,
-      media: {
-        type: 1,
-        vp_path: "tmp/4d1284cc-f89e-422a-8380-25c17e21db2f.mp4",
-        gpx_path: "tmp/b5f944ef-efb6-4518-b212-f2cc377d78e4.gpx"
+      map_default_option: {
+        view: [0,0],
+        pin: [0,0],
+        zoom: 1
       },
-      view: [36.2048, 138.2529],
+      modal: false,
+      modal_video_url: null,
+      modal_image_url: null,
       gpxOptions: {
         async: true,
         marker_options: {
-          startIconUrl: '/pin-icon-start.png',
-          endIconUrl:   '/pin-icon-end.png',
-          shadowUrl:    '/pin-shadow.png',
+          startIconUrl: false,
+          endIconUrl: false,
+          shadowUrl: false,
         },
         gpx_options: {
-            joinTrackSegments: false
+          joinTrackSegments: false
         }, 
-      }
+      },
+      // record: {
+      //   "type": 2,
+      //   "image_path": "tmp/3f445e48-042c-4db6-821e-83e65e4683cc.jpg",
+      //   "image_lat": 35.699777777777776,
+      //   "image_long": 139.7717
+      // }
     };
   },
   mounted() {
     const self = this
-    self.map = L.map('map').setView(this.view,6);
+    console.log('record', self.record)
+    self.map_default_option = this.constant.map
+    console.log('self.map_default_option', self.map_default_option)
+    self.map = L.map('map').setView(self.map_default_option.view,self.map_default_option.zoom);
+
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
     }).addTo(self.map)
-    if(self.media.type == 1) { // video
-      const gpx_url = self.get_path_url(self.media.gpx_path)
+
+    if(self.record.type == 1) { // video
+      const gpx_url = self.get_path_url(self.record.gpx_path)
       console.log('gpx_url', gpx_url)
       new L.GPX(gpx_url, this.gpxOptions)
         .on('loaded', self.onLoaded)
         .on('click', function() {
-            self.onShowModal(self.media)
+            self.onShowModal()
         });
+    } else if(self.record.type == 2 || self.record.type == 3) {
+      const coordinate = (self.record.image_lat && self.record.image_long) ? 
+        [self.record.image_lat, self.record.image_long] : this.map_default_option.pin
+      
+      const pin_marker = L.marker(coordinate, { draggable: true })
+        .addTo(self.map)
+        .on('click', function() {
+          self.onShowModal()
+        });
+        
+      // マウススクロールイベントのリスナーを追加
+      pin_marker.on('dragstart', function (e) {
+          console.log('ドラッグが開始されました');
+      });
+      pin_marker.on('dragend', function (e) {
+        var newPosition = pin_marker.getLatLng();
+        self.$emit('update', newPosition)
+      });
     }
   },
   methods: {
@@ -79,15 +107,15 @@ export default {
       this.map.fitBounds(e.target.getBounds());
       e.target.addTo(this.map);
     },
-    onShowModal(media) {
-      if(media.type == 1) {
-        this.modal_vp_url = this.get_path_url(media.vp_path)
+    onShowModal() {
+      if(this.record.type == 1) {
+        this.modal_video_url = this.get_path_url(this.record.video_path)
         this.modal = true
       } else { // image, panorama
-        self.modal_image_url = this.get_path_url(media.image_path)
+        this.modal_image_url = this.get_path_url(this.record.image_path)
         this.modal = true
       }
-    }
+    },
   },
 };
 </script>

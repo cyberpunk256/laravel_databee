@@ -5,6 +5,9 @@ import vuetify from 'vite-plugin-vuetify'
 import eslintPlugin from 'vite-plugin-eslint'
 
 export default defineConfig({
+  define: {
+    'process.env': {}
+  },
   plugins: [
     laravel({
       input: [

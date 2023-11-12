@@ -53,31 +53,40 @@ class S3Service
         return $presignedUrl;
     }
 
-    public function upload($file, $path) 
+    public function upload($body, $path) 
     {
         $this->s3client->putObject([
             'Bucket' => config('filesystems.disks.s3.bucket'),
             'Key'    => $path,
-            'Body'   => file_get_contents($file), // 画像ファイルの内容を取得
+            'Body'   => $body, // 画像ファイルの内容を取得
         ]);
 
         return true;
     }
 
-    public function fileMovieFromTmp($file_name) 
+    public function move($from_path, $to_path) 
     {
-        $file_path = "tmp/" . $file_name;
         // ファイルをコピー
         $this->s3client->copyObject([
             'Bucket' => config('filesystems.disks.s3.bucket'),
-            'Key' => $file_name,
-            'CopySource' => config('filesystems.disks.s3.bucket') . "/" . $file_path,
+            'Key' => $to_path,
+            'CopySource' => config('filesystems.disks.s3.bucket') . "/" . $from_path,
         ]);
     
         // 元のファイルを削除
         $this->s3client->deleteObject([
             'Bucket' => config('filesystems.disks.s3.bucket'),
-            'Key' => $file_path,
+            'Key' => $from_path,
+        ]);
+    }
+
+    public function deleteFiles($files) {
+        // 元のファイルを削除
+        $this->s3client->deleteObjects([
+            'Bucket' => config('filesystems.disks.s3.bucket'),
+            'Delete' => [
+                'Objects' => $files,
+            ],
         ]);
     }
 

@@ -61,13 +61,13 @@ export default {
       // Get a reference to the video element
       this.video = panorama.getVideoElement();
       this.video.addEventListener('timeupdate', function() {
-        // ビデオの現在の再生時間と総時間を取得
-        var currentTime = self.video.currentTime;
-        var duration = self.video.duration;
+          // ビデオの現在の再生時間と総時間を取得
+          var currentTime = self.video.currentTime;
+          var duration = self.video.duration;
 
-        // プログレスバーの幅を更新
-        self.progress = (currentTime / duration) * 100;
-    });
+          // プログレスバーの幅を更新
+          self.progress = (currentTime / duration) * 100;
+      });
 
     },
     onPause() {

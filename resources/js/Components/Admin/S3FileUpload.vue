@@ -7,6 +7,7 @@
           :url="get_path_url(origin)"
           class="vp_form_preview"
         />
+        <v-btn @click="onRemoveOrigin" color="primary" class="mt-2">3DMovieを削除</v-btn>
       </template>
       <template v-if="type == 'image' && origin">
         <v-img
@@ -14,6 +15,7 @@
           contain
           :src="get_path_url(origin)"
         ></v-img>
+        <v-btn @click="onRemoveOrigin" color="primary" class="mt-2">Still Imageを削除</v-btn>
       </template>
       <template v-if="type == 'panorama' && origin">
         <v-img
@@ -22,29 +24,34 @@
           cover
           :src="get_path_url(origin)"
         ></v-img>
+        <v-btn @click="onRemoveOrigin" color="primary" class="mt-2">Panorama Imageを削除</v-btn>
+      </template>
+      <template v-if="type == 'gpx' && origin">
+        <v-list>
+          <Link :href="get_path_url(origin)" target="_blank">{{ get_path_url(origin) }}</Link>
+        </v-list>
+        <v-btn @click="onRemoveOrigin" color="primary" class="mt-2">GPXファイルを削除</v-btn>
       </template>
     </template>
     <template v-else>
       <div ref="dropzone" class="dropzone needsclick">
         <div class="dz-message needsclick">{{ label }}</div>
       </div>
-      <v-input :error-messages="error">
-      </v-input>
     </template>
+    <v-input :error-messages="error">
+    </v-input>
   </div>
 </template>
 
 <script>
 import Dropzone from "dropzone";
 import ThreeVideoPlayer from '@/Components/Admin/ThreeVideoPlayer.vue';
-import Panorama from '@/Components/Admin/Panorama.vue';
+import Panorama from '@/Components/Panorama.vue';
+import { Link } from '@inertiajs/vue3'
+import ExifReader from 'exifreader';
 
-
-export default {
-  watch: {
-  },
-  props: [ 'type', 'label', 'error', 'origin' ],
-  components: { ThreeVideoPlayer, Panorama },
+export default {  props: [ 'type', 'label', 'error', 'origin' ],
+  components: { ThreeVideoPlayer, Panorama, Link },
   data() {
     return {
       upload_url: "/admin/media/file_upload",
@@ -53,6 +60,8 @@ export default {
       file_path: null,
       file_name: null,
       video_duration: null,
+      image_lat: null,
+      image_long: null,
       dropzone: null
     }
   },
@@ -61,6 +70,14 @@ export default {
     this.init_dropzone();
   },
   methods: {
+    onRemoveOrigin() {
+      this.$emit('removeOrign')
+      this.$nextTick(() => {
+        if(!this.dropzone) {
+          this.init_dropzone()
+        }
+      })
+    },
     init_data() {
       if(this.type == 'video') {
         this.accepted_files = "video/*"
@@ -78,9 +95,11 @@ export default {
         if(data.success) {
           self.file_path = data.file_path
           self.file_name = data.file_name
-          self.dropzone.options.url = data.presigned_url
           self.video_duration = params.video_duration
-          console.log('files', self.dropzone.files)
+          self.image_lat = params.image_lat
+          self.image_long = params.image_long
+
+          self.dropzone.options.url = data.presigned_url
           if(self.dropzone.files.length > 0) {
             self.$emit('status', true)
             self.dropzone.processQueue();
@@ -97,6 +116,7 @@ export default {
     },
     init_dropzone() {
       const self = this
+      if(!this.$refs.dropzone) return
       this.dropzone = new Dropzone(this.$refs.dropzone, {
         url: '/',
         method: 'put',
@@ -104,6 +124,7 @@ export default {
         thumbnailWidth: 120,
         maxFilesize: 1024 * 1024 * 1024 * 10, // 10Gbyte
         maxFiles: 1,
+        acceptedFiles: self.accepted_files,
         binaryBody: true,
         addRemoveLinks: true,
         autoProcessQueue: false,
@@ -114,7 +135,7 @@ export default {
         }
       })
       
-      this.dropzone.on("addedfile", function(file) {
+      this.dropzone.on("addedfile", async function(file) {
         console.log('file', file);
         if (this.files.length > 1) {
           this.removeFile(this.files[0]);
@@ -129,17 +150,39 @@ export default {
             self.init_presigned_upload({
               extension: extension,
               type: file.type,
-              video_duration: video.duration
+              video_duration: video.duration,
+              image_lat: null,
+              image_long: null,
             })
             video.parentNode.removeChild(video);
             URL.revokeObjectURL(video.src);
           });
           video.load();
         } else {
+          let geo_data = {
+            image_lat: null,
+            image_long: null,
+          }
+          if(file.type.indexOf('image/') > -1) {
+            try {
+              const tags = await ExifReader.load(file);
+              if(tags) {
+                geo_data = {
+                  image_lat: tags.GPSLatitude.description,
+                  image_long: tags.GPSLongitude.description,
+                }
+              }
+              console.log('tags', tags)
+            } catch(e) {
+              console.log(e)
+            }
+          }
           self.init_presigned_upload({
             extension: extension,
             type: file.type,
-            video_duration: null
+            video_duration: null,
+            image_lat: geo_data.image_lat,
+            image_long: geo_data.image_long,
           })
         }
       });
@@ -155,7 +198,9 @@ export default {
         self.$emit('success', {
           file_path: self.file_path,
           file_name: self.file_name,
-          video_duration: self.video_duration
+          video_duration: self.video_duration,
+          image_lat: self.image_lat,
+          image_long: self.image_long,
         })
       });
 
@@ -163,7 +208,6 @@ export default {
         self.$emit('status', false)
         self.show_toast()
       });
-
 
       this.dropzone.on("sending", function (file, xhr, formData) {
         // xhr.setRequestHeader('Content-Type', file.type);

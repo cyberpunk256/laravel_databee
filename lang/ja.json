@@ -792,6 +792,7 @@
     "success_delete": "削除しました。",
     "success_fail": "操作が失敗しました。",
     "success_error": "エラーが発生しました。",
-    "success_complete": "操作が成功しました。"
+    "success_complete": "操作が成功しました。",
+    "success_capture": "キャッチャーしました。"
 }
     

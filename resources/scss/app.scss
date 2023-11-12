@@ -35,6 +35,10 @@
 .vp_card {
   overflow: visible !important;
   position: relative;
+  .vp_content {
+    max-height: calc(100vh - 48px);
+    overflow: auto;
+  }
   .vp_close {
     position: absolute;
     right: 0;
@@ -92,10 +96,15 @@
   // }
 }
 
-.user_map  {
+.fix_map  {
   position: fixed;
   left: 0;
   top: 0;
   right: 0;
   bottom: 0;
+}
+.fix_action {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
 }

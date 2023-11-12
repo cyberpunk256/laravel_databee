@@ -17,7 +17,7 @@ import { Head, Link } from '@inertiajs/vue3'
       <v-dialog v-if="modal_type == 1 && modal_video_url" v-model="modal" width="auto">
         <v-card class="vp_card">
           <v-btn icon="mdi-close" @click="modal = false" class="vp_close"></v-btn>
-          <three-video-player :capture="true" :url="modal_video_url"/>
+          <three-video-player :url="modal_video_url"/>
         </v-card>
       </v-dialog>
       <v-dialog v-if="modal_type == 2 && modal_image_url" v-model="modal" width="auto">
@@ -39,7 +39,7 @@ import { Head, Link } from '@inertiajs/vue3'
 <script>
 import L from 'leaflet';
 import 'leaflet-gpx';
-import ThreeVideoPlayer from '@/Components/ThreeVideoPlayer.vue';
+import ThreeVideoPlayer from '@/Components/Admin/ThreeVideoPlayer.vue';
 import Panorama from '@/Components/Panorama.vue';
 
 export default {

@@ -9,13 +9,14 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
       <v-card-text>
         <v-text-field v-model="form.name" label="メディア名" variant="underlined" :error-messages="form.errors.name" />
         <v-select
+          :items="constant.enums.media_types"
+          :error-messages="form.errors.type"
+          @change="onTypeChange"
           v-model="form.type"
-          :items="enums.media_types"
           item-title="text"
           item-value="value"
           label="メディア種別"
           variant="underlined"
-          :error-messages="form.errors.type"
           class="mt-4"
         />
         <template v-if="form.type == 1">
@@ -25,6 +26,7 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
             type="video"
             @success="value => onFileUploaded('video', value)"
             @remove="onFileUploaded('video', null)"
+            @removeOrign="onRemoveOrigin('origin_video_path')"
             @status="value => onUploadStatus('video', value)"
             label="メディアファイルをアップロードしてください。"
             class="mt-2"
@@ -35,22 +37,41 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
             type="gpx"
             @success="value => onFileUploaded('gpx', value)"
             @remove="onFileUploaded('gpx', null)"
-            @status="value => onUploadStatus('video', value)"
+            @removeOrign="onRemoveOrigin('origin_gpx_path')"
+            @status="value => onUploadStatus('gpx', value)"
             label="GPXファイルをアップロードしてください。"
             class="mt-2"
           />
         </template>
-        <template v-else>
+        <template v-if="form.type == 2">
           <S3FileUpload
             :origin="form.origin_image_path"
-            :error="form.errors.media"
-            :type="form.type == 2 ? 'image' : 'panorama'"
+            :error="form.errors.image"
+            type="image"
             @success="value => onFileUploaded('image', value)"
             @remove="onFileUploaded('image', null)"
-            @status="value => onUploadStatus('video', value)"
+            @removeOrign="onRemoveOrigin('origin_image_path')"
+            @status="value => onUploadStatus('image', value)"
             label="メディアファイルをアップロードしてください。"
             class="mt-2"
           />
+        </template>
+        <template v-if="form.type == 3">
+          <S3FileUpload
+            :origin="form.origin_image_path"
+            :error="form.errors.panorama"
+            type="panorama"
+            @success="value => onFileUploaded('image', value)"
+            @remove="onFileUploaded('image', null)"
+            @removeOrign="onRemoveOrigin('origin_image_path')"
+            @status="value => onUploadStatus('image', value)"
+            label="メディアファイルをアップロードしてください。"
+            class="mt-2"
+          />
+        </template>
+        <template v-if="form.type == 2 || form.type == 3">
+          <v-text-field v-model="form.image_lat" label="緯度" variant="underlined" />
+          <v-text-field v-model="form.image_long" label="経度" variant="underlined"/>
         </template>
       </v-card-text>
       <v-divider></v-divider>
@@ -66,8 +87,10 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
       </v-row>
     </template>
     <template v-else>
-      <!-- <Map :type="form.type" :media="computedMedia"></Map> -->
-      <Map :type="form.type"></Map>
+      <Map 
+        :record="computedRecord"
+        @update="onUpdateLatLng"
+      ></Map>
       <v-divider></v-divider>
       <v-row class="py-4" justify="center">
         <v-col cols="auto">
@@ -135,7 +158,13 @@ export default {
   },
   methods: {
     onFileUploaded(field, data) {
-      this.form[field] = data
+      this.form[field] = {
+        file_path: data.file_path,
+        file_name: data.file_name,
+        video_duration: data.video_duration,
+      }
+      this.form.image_lat = data.image_lat
+      this.form.image_long = data.image_long
       console.log('form',this.form)
     },
     onValidate() {
@@ -146,17 +175,17 @@ export default {
       if (!this.form.type) {
         errors.type = 'メディア種別は必ず入力してください。'
       }
-      if (this.form.type == 1 && !this.form.video) {
+      if (this.form.type == 1 && !this.form.origin_video_path && !this.form.video) {
         errors.video = '3D Movieファイルは必ず入力してください。'
       }
-      if (this.form.type == 1 && !this.form.gpx) {
+      if (this.form.type == 1 && !this.form.origin_gpx_path && !this.form.gpx) {
         errors.gpx = 'GPXファイルは必ず入力してください。'
       }
-      if (this.form.type == 2 && !this.form.image) {
+      if (this.form.type == 2 && !this.form.origin_image_path && !this.form.image) {
         errors.image = 'Still Imageファイルは必ず入力してください。'
       }
-      if (this.form.type == 3 && !this.form.image) {
-        errors.image = 'Panorama Imageファイルは必ず入力してください。'
+      if (this.form.type == 3 && !this.form.origin_image_path && !this.form.image) {
+        errors.panorama = 'Panorama Imageファイルは必ず入力してください。'
       }
       this.form.errors = errors
       if (Object.keys(errors).length > 0) {
@@ -176,6 +205,20 @@ export default {
       if (this.onValidate()) {
         this.$emit('preview');
       }
+    },
+    onRemoveOrigin(field) {
+      this.form[field] = null
+    },
+    onTypeChange() {
+      this.form.video = null
+      this.form.image = null
+      this.form.gpx = null
+      this.form.image_lat = null
+      this.form.image_long = null
+    },
+    onUpdateLatLng(latLng) {
+      this.form.image_lat = latLng.lat
+      this.form.image_long = latLng.lng
     },
     onSubmit() {
       const self = this
@@ -197,7 +240,7 @@ export default {
         return false;
       }
     },
-    computedMedia() {
+    computedRecord() {
       if(this.form.type == 1) { // video
         const video_path = this.form.origin_video_path ? this.form.origin_video_path : this.form.video.file_path
         const gpx_path = this.form.origin_gpx_path ? this.form.origin_gpx_path : this.form.gpx.file_path
@@ -211,6 +254,8 @@ export default {
         return {
           type: this.form.type,
           image_path: image_path,
+          image_lat: this.form.image_lat,
+          image_long: this.form.image_long,
         }
       }
     },

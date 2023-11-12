@@ -29,7 +29,11 @@ Route::middleware('auth.admin')->group(function () {
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/', [DashboardController::class, 'index'])->name('index');
     Route::resource('user', UserController::class)->except(['show']);
-    Route::post('media/{id}/update_status', [MediaController::class, 'updateStatus'])->name('media.updateStatus');
+    Route::get('media/preview', [MediaController::class, 'preview'])->name('media.preview');
+    Route::post('media/delete_records', [MediaController::class, 'deleteRecords'])->name('media.deleteRecords');
     Route::post('media/new_presigned_url', [MediaController::class, 'createPresignedUrl'])->name('media.createPresignedUrl');
+    Route::post('media/{id}/update_status', [MediaController::class, 'updateStatus'])->name('media.updateStatus');
     Route::resource('media', MediaController::class)->except(['show']);
 });
+
+   

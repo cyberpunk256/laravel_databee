@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use App\Services\S3Service;
 
+use App\Models\Media;
+
 class IndexController extends Controller
 {
     protected S3Service $s3service;
@@ -17,8 +19,10 @@ class IndexController extends Controller
 
     public function index(Request $request)
     {
-        // $list = $this->s3service->getList();
-        // dd(array_column($list, 'Key'));
-        return Inertia::render('Index');
+        $records = Media::all();
+
+        return Inertia::render('Index', [
+            'records' => $records
+        ]);
     }
 }

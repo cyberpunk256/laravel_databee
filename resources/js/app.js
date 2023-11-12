@@ -6,8 +6,10 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import vuetify from './Plugins/vuetify'
 import toast from './Plugins/toast'
 import mixin from './Plugins/mixin'
+import moment from './Plugins/moment'
 
 const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Laravel'
+window.moment = moment
 
 createInertiaApp({
   title: (title) => `${title} - ${appName}`,

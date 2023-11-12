@@ -19,10 +19,11 @@ return new class extends Migration
             $table->foreign('media_id')->references('id')->on('medias')->onDelete('cascade');
 
             $table->string('url')->nullable();
-            $table->string('postion')->nullable();
             $table->double('playtime', 10, 2)->nullable();
-            $table->float('rotate', 8, 2)->nullable();
+            $table->float('rotation', 8, 2)->nullable();
             $table->float('scale', 8, 2)->nullable();
+            $table->double('lat', 11, 8)->nullable();
+            $table->double('long', 11, 8)->nullable();
 
             $table->timestamps();
             $table->softDeletes();

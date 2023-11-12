@@ -78,5 +78,4 @@ Route::middleware('auth:web')->group(function () {
     
 
     Route::get('/', [IndexController::class, 'index'])->name('index');
-
 });

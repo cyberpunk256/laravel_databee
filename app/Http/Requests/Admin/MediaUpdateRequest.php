@@ -21,18 +21,28 @@ class MediaUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'type' => ["required", "in:" . implode(",", array_column(config('values.enums.media_types'), 'value'))],
+            'type' => ["required", "in:" . implode(",", array_column(config('constant.enums.media_types'), 'value'))],
             'video' => ['nullable', 'required_if:type,1'], // movie,
-            'gpx' => ['nullable', 'required_if:type,1'], // gpx,
-            'image' => ['nullable', 'required_unless:type,1'], // image,
+            'gpx' => ['nullable', 'required_if:type,1', 'required_if:origin_gpx_path,null'], // gpx,
+            'image' => ['nullable', 'required_unless:type,1', 'required_if:origin_image_path,null'], // image,
             'image_lat' => ['nullable'],
             'image_long' => ['nullable'],
-            'origin_video_path' => ['nullalbe'],
-            'origin_image_path' => ['nullalbe'],
-            'origin_gpx_path' => ['nullalbe'],
+            'origin_video_path' => ['nullable'],
+            'origin_image_path' => ['nullable'],
+            'origin_gpx_path' => ['nullable'],
         ];
+        if($this->origin_video_path == null) {
+            $rules['video'] = ['nullable', 'required_if:type,1'];
+        }
+        if($this->origin_gpx_path == null) {
+            $rules['gpx'] = ['nullable', 'required_if:type,1'];
+        }
+        if($this->origin_image_path == null) {
+            $rules['image'] = ['nullable', 'required_unless:type,1'];
+        }
+        return $rules;
     }
 
     /**

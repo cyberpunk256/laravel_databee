@@ -4,10 +4,10 @@
 </template>
 
 <script>
-import { Viewer, VideoPanorama } from 'panolens';
+import { Viewer, ImagePanorama } from 'panolens';
 
 export default {
-  props: ['url', 'capture'],
+  props: ['url'],
   data() {
     return {
       panorama: null,
@@ -21,18 +21,10 @@ export default {
   },
   methods: {
     initVideoPlayer() {
-      const self = this
-      // Create a viewer for the panorama
+      const panorama = new ImagePanorama(this.url);
       const viewer = new Viewer({
         container: this.$refs.vp_wrap,
       });
-
-      // Create a VideoPanorama with your 360-degree video
-      const panorama = new VideoPanorama(this.url, {
-        autoplay: false, // Disable auto-play for custom control handling
-      });
-
-      // Add the VideoPanorama to the viewer
       viewer.add(panorama);
     },
   },

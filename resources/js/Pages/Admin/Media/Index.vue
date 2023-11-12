@@ -10,35 +10,48 @@ import { Head, Link } from '@inertiajs/vue3'
       <h5 class="text-h5 font-weight-bold">メディア一覧</h5>
     </div>
     <v-card class="pa-4">
-      <div class="d-flex flex-wrap align-center">
-        <v-text-field
-          v-model="search"
-          label="Search"
-          variant="underlined"
-          prepend-inner-icon="mdi-magnify"
-          hide-details
-          clearable
-          single-line
-        />
-        <v-spacer />
-        <Link href="/admin/media/create" as="div">
-          <v-btn color="primary">新規登録</v-btn>
-        </Link>
-      </div>
+      <v-row>
+        <v-col :cols="20">
+          <v-text-field
+            v-model="search"
+            label="Search"
+            variant="underlined"
+            prepend-inner-icon="mdi-magnify"
+            hide-details
+            clearable
+            single-line
+          />
+        </v-col>
+        <v-col cols="auto">
+          <Link href="/admin/media/preview" as="div">
+            <v-btn color="green" hide-details>地図表示</v-btn>
+          </Link>
+        </v-col>
+        <v-col cols="auto">
+          <Link href="/admin/media/create" as="div">
+            <v-btn color="primary" hide-details>新規登録</v-btn>
+          </Link>
+        </v-col>
+      </v-row>
       <v-data-table-server
+        v-model="selectedItems"
         :items="data.data"
         :items-length="data.total"
         :headers="headers"
         :search="search"
         class="elevation-0"
-        :loading="isLoadingTable"
+        :loading="isLoading"
         @update:options="loadItems"
+        show-select
       >
         <template #[`item.admin_name`]="{ item }">
           {{ item.raw.admin.name }}
-          </template>
+        </template>
+        <template #[`item.updated_at`]="{ item }">
+          {{ getYmdHiFromDTS(item.raw.updated_at) }}
+        </template>
         <template #[`item.type`]="{ item }">
-          {{ getTextOfOption(type_options, item.columns.type) }}
+          {{ getTextOfOption(constant.enums.media_types, item.columns.type) }}
           </template>
         <template #[`item.status`]="{ item }">
           <v-switch 
@@ -56,8 +69,36 @@ import { Head, Link } from '@inertiajs/vue3'
             <v-btn color="warning" icon="mdi-pencil" size="small" />
           </Link>
         </template>
+        <template #bottom="{ item }">
+          <v-row>
+            <v-col cols="auto">
+              <v-btn @click="onRemoveConfirm" color="red" hide-details>選択したメディを削除</v-btn>
+            </v-col>
+            <v-spacer></v-spacer>
+            <v-col cols="auto">
+              <v-data-table-footer>
+              </v-data-table-footer>
+            </v-col>
+          </v-row>
+        </template>
       </v-data-table-server>
     </v-card>
+    <v-row justify="center">
+      <v-dialog v-model="deleteDialog" persistent width="auto">
+        <v-card>
+          <v-card-text>本当に削除しますか？</v-card-text>
+          <v-divider></v-divider>
+          <v-row class="my-0" justify="center">
+            <v-col cols="auto">
+              <v-btn @click="deleteDialog = false">キャンセル</v-btn>
+            </v-col>
+            <v-col cols="auto">
+              <v-btn color="red" :loading="isLoading" text @click="onRemoveSelected">削除</v-btn>
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-dialog>
+    </v-row>
   </AdminLayout>
 </template>
 
@@ -85,20 +126,17 @@ export default {
           disabled: true,
         },
       ],
-      isLoadingTable: false,
+      isLoading: false,
       search: null,
+      selectedItems: [],
       deleteDialog: false,
-      deleteId: null,
-      type_options: []
     }
   },
   mounted() {
-    this.type_options = this.enums.media_types
-    console.log('this.type_options', this.type_options)
   }, 
   methods: {
     loadItems({ page, itemsPerPage, sortBy, search }) {
-      this.isLoadingTable = true
+      this.isLoading = true
       var params = {
         page: page,
         limit: itemsPerPage,
@@ -111,22 +149,36 @@ export default {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {
-          this.isLoadingTable = false
+          this.isLoading = false
         },
       })
     },
     onChangeStatus(id) {
       const self = this
-      this.isLoadingTable = true
+      this.isLoading = true
       this.$inertia.post(`/admin/media/${id}/update_status`, {
         value: 3
       }, {
         onFinish: () => {
-          self.isLoadingTable = false
+          self.isLoading = false
           self.show_toast();
         }
       })
     },
+    onRemoveConfirm() {
+      this.deleteDialog = true
+    },
+    onRemoveSelected() {
+      console.log('selectedItems', this.selectedItems);
+      this.$inertia.post(`/admin/media/delete_records`, {
+        ids: this.selectedItems
+      }, {
+        onFinish: () => {
+          self.isLoading = false
+          self.show_toast();
+        }
+      })
+    }
   },
 }
 </script>
