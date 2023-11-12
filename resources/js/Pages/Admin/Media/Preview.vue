@@ -23,13 +23,17 @@ import { Head, Link } from '@inertiajs/vue3'
       <v-dialog v-if="modal_type == 2 && modal_image_url" v-model="modal" width="auto">
         <v-card class="vp_card">
           <v-btn icon="mdi-close" @click="modal = false" class="vp_close"></v-btn>
-          <v-img v-if="modal" max-width="1000" contain :src="modal_image_url"></v-img>
+          <div class="vp_content">
+            <v-img v-if="modal" max-width="1000" contain :src="modal_image_url"></v-img>
+          </div>
         </v-card>
       </v-dialog>
       <v-dialog v-if="modal_type == 3 && modal_image_url" v-model="modal" width="auto">
         <v-card class="vp_card">
           <v-btn icon="mdi-close" @click="modal = false" class="vp_close"></v-btn>
+          <div class="vp_content">
             <panorama v-if="modal"  :url="modal_image_url"></panorama>
+          </div>
         </v-card>
       </v-dialog>
     </template>

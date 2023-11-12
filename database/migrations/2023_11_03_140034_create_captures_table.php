@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('url')->nullable();
             $table->double('playtime', 10, 2)->nullable();
             $table->float('rotation', 8, 2)->nullable();
-            $table->float('scale', 8, 2)->nullable();
+            $table->string('zoom')->nullable();
             $table->double('lat', 11, 8)->nullable();
             $table->double('long', 11, 8)->nullable();
 

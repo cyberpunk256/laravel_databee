@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\S3Controller;
+use App\Http\Controllers\CaptureController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -21,5 +22,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // });
     Route::post('get_presigned_url', [S3Controller::class, 'getPresignedUrl'])->name('getPresignedUrl');
     Route::get('get_file', [S3Controller::class, 'getFile'])->name('getFile'); 
-    Route::post('file_upload', [CaptureController::class, 'fileUpload'])->name('media.fileUpload');
+    Route::post('capture/file_upload', [CaptureController::class, 'fileUpload'])->name('media.fileUpload');
 });

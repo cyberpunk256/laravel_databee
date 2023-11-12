@@ -15,10 +15,11 @@ class Capture extends Model
         'user_id',
         'media_id',
         'url',
-        'postion',
         'playtime',
-        'rotate',
-        'scale'
+        'rotation',
+        'zoom',
+        'lat',
+        'long',
     ];  
 
     /**

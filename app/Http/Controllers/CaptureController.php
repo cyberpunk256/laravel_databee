@@ -4,32 +4,38 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use App\Http\Requests\UpdateCaptureRequest;
+use App\Http\Requests\CaptureUpdateRequest;
+use App\Services\S3Service;
+
+use App\Models\Capture;
 
 class CaptureController extends Controller
 {
-    public function fileUpload(UpdateCaptureRequest $request) 
+    protected S3Service $s3service;
+    public function __construct()
+    {
+        $this->s3service = new S3Service();
+    }
+
+    public function fileUpload(CaptureUpdateRequest $request) 
     {
         try {
             $imageData = $request->file('file_str');
             $attrs = [
-                $request->input('playtime');
-            ]
-            $playtime = $request->input('playtime');
-            // Base64データをデコードしてファイルに保存
+                "user_id" => Auth()->user()->id,
+                "media_id" => $request->input('media_id'),
+                "playtime" => $request->input('playtime'),
+                "rotation" => $request->input('rotation'),
+                "zoom" => $request->input('zoom'),
+            ];
             $imageBody = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $imageData));
-            $file_path = date("Ymd") . "/" . Str::uuid() . "." . '.png'; // 一意のファイル名を生成
-            $status = $this->s3service->upload($imageBody, $file_path);
+            $attrs['url'] = date("Ymd") . "/" . Str::uuid() . "." . '.png'; // 一意のファイル名を生成
+            $this->s3service->upload($imageBody, $attrs['url']);
 
-            Capture::create([
-                "url" => $file_path,
-                "position: "
-            ])
+            Capture::create($attrs);
             
             return response()->json([
-                "success" => __("success_complete"),
-                'file_path' => $file_path,
-                'file_name' => $file_name
+                "success" => __("success_capture"),
             ]);
         } catch (\Throwable $exception) {
             \Log::error($exception);

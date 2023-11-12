@@ -13,7 +13,7 @@
           <v-btn icon="mdi-fast-forward" @click="onFast"></v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-btn v-if="capture" icon="mdi-record" @click="onCapture"></v-btn>
+          <v-btn icon="mdi-record" @click="onCapture"></v-btn>
         </v-col>
       </v-row>
       <div class="vp_progress mt-2">
@@ -29,7 +29,7 @@ import { Viewer, VideoPanorama } from 'panolens';
 export default {
   watch: {
   },
-  props: ['url', 'capture'],
+  props: ['url', 'id'],
   data() {
     return {
       viewer: null,
@@ -53,15 +53,15 @@ export default {
       });
 
       // Create a VideoPanorama with your 360-degree video
-      const panorama = new VideoPanorama(this.url, {
+      this.panorama = new VideoPanorama(this.url, {
         autoplay: false, // Disable auto-play for custom control handling
       });
 
       // Add the VideoPanorama to the viewer
-      this.viewer.add(panorama);
+      this.viewer.add(this.panorama);
 
       // Get a reference to the video element
-      this.video = panorama.getVideoElement();
+      this.video = this.panorama.getVideoElement();
       this.video.addEventListener('timeupdate', function() {
           // ビデオの現在の再生時間と総時間を取得
           var currentTime = self.video.currentTime;
@@ -101,28 +101,38 @@ export default {
       this.video.currentTime = time;
     },
     async onCapture() {
-      if(!this.panorama) return;
+      if(!this.viewer) return;
       const self = this
       try {
         this.is_capturing = true
-        const file_str = this.panorama.captureFrame();
-        const camera = this.panorama.getCamera();
-        const rotation = camera.rotation.clone();  // カメラの回転情報を取得
-        const scale = camera.scale.clone();        // カメラのスケール情報を取得
-        const { data } = await axios.post('/api/capture/file_upload', {
+        const file_str = this.viewer.renderer.domElement.toDataURL();
+        const camera = this.viewer.getCamera();
+        const rotation_vector = camera.rotation;  // カメラの回転情報を取得
+        const rotation = {
+          x: rotation_vector.x,
+          y: rotation_vector.y,
+          z: rotation_vector.z,
+        }
+        const scale = camera.zoom;
+        const params = {
+          media_id: self.id,
           file_str: file_str,
           playtime: self.video.currentTime.toFixed(2),
-          rotation: rotation.toFixed(2),
-          scale: scale.toFixed(2)
-        })
+          rotation: JSON.stringify(rotation),
+          zoom: scale.toFixed(2),
+          lat: 35.685175,
+          long: 139.7528,
+        }
+        console.log('params', params)
+        const { data } = await axios.post('/api/capture/file_upload', params)
         if(data.success) {
-          show_toast("success", data.success)
+          self.show_toast("success", data.success)
         } else {
-          show_toast("error", data.error)
+          self.show_toast("error", data.error)
         }
       } catch(e) {
-        consoe.log('e')
-          show_toast()
+        console.log(e)
+        self.show_toast()
       }
 
     }

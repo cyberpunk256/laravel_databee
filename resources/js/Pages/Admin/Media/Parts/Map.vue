@@ -18,7 +18,9 @@
     <v-dialog v-if="record.type == 3 && modal_image_url" v-model="modal" width="auto">
       <v-card class="vp_card">
         <v-btn icon="mdi-close" @click="modal = false" class="vp_close"></v-btn>
-          <panorama :url="modal_image_url"></panorama>
+        <div class="vp_content">
+          <panorama v-if="modal"  :url="modal_image_url"></panorama>
+        </div>
       </v-card>
     </v-dialog>
   </div>
@@ -76,7 +78,7 @@ export default {
 
     if(self.record.type == 1) { // video
       const gpx_url = self.get_path_url(self.record.gpx_path)
-      console.log('gpx_url', gpx_url)
+      console.log('gpx_url', gpx_url) 
       new L.GPX(gpx_url, this.gpxOptions)
         .on('loaded', self.onLoaded)
         .on('click', function() {

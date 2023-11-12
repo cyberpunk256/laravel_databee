@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateCaptureRequest extends FormRequest
+class CaptureUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,9 +22,10 @@ class UpdateCaptureRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'media_id' => ['required', 'exists:medias,id'],
             'playtime' => ['required'],
             'rotation' => ['required'],
-            'scale' => ['required'],
+            'zoom' => ['required'],
             'lat' => ['required'],
             'long' => ['required'],
         ];
@@ -38,12 +39,13 @@ class UpdateCaptureRequest extends FormRequest
     public function attributes()
     {
         return [
+            'media_id' => 'メディア',
             'playtime' => '時間',
             'rotation' => 'ロテーション',
-            'scale' => 'スケール',
+            'zoom' => '縮尺',
             'lat' => '軽度',
             'long' => '緯度',
-        ]
+        ];
     }
 
 }
