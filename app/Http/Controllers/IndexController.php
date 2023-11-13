@@ -19,7 +19,12 @@ class IndexController extends Controller
 
     public function index(Request $request)
     {
-        $records = Media::all();
+        $user = Auth()->user();
+        $records = Media::query()
+            ->whereHas('admin', function ($query) use($user) {
+                $query->where('pref', $user->pref); 
+            })
+            ->get();
 
         return Inertia::render('Index', [
             'records' => $records

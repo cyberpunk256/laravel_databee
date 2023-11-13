@@ -67,9 +67,7 @@ export default {
   },
   mounted() {
     const self = this
-    console.log('record', self.record)
     self.map_default_option = this.constant.map
-    console.log('self.map_default_option', self.map_default_option)
     self.map = L.map('map').setView(self.map_default_option.view,self.map_default_option.zoom);
 
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -78,7 +76,6 @@ export default {
 
     if(self.record.type == 1) { // video
       const gpx_url = self.get_path_url(self.record.gpx_path)
-      console.log('gpx_url', gpx_url) 
       new L.GPX(gpx_url, this.gpxOptions)
         .on('loaded', self.onLoaded)
         .on('click', function() {
@@ -96,7 +93,6 @@ export default {
         
       // マウススクロールイベントのリスナーを追加
       pin_marker.on('dragstart', function (e) {
-          console.log('ドラッグが開始されました');
       });
       pin_marker.on('dragend', function (e) {
         var newPosition = pin_marker.getLatLng();

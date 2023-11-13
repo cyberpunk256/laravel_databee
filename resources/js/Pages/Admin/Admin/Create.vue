@@ -6,7 +6,7 @@ import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue'
 <template>
   <AdminLayout>
     <div class="mb-5">
-      <h5 class="text-h5 font-weight-bold">ユーザー新規登録</h5>
+      <h5 class="text-h5 font-weight-bold">管理者新規登録</h5>
       <Breadcrumbs :items="breadcrumbs" class="pa-0 mt-1" />
     </div>
     <v-card>
@@ -32,6 +32,28 @@ import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue'
                 variant="underlined"
                 type="password"
                 :error-messages="form.errors.password"
+              />
+            </v-col>
+            <v-col cols="12" sm="12" md="6">
+              <v-select
+                v-model="form.role"
+                :items="constant.enums.roles"
+                item-title="text"
+                item-value="value"
+                label="権限"
+                variant="underlined"
+                :error-messages="form.errors.role"
+              />
+            </v-col>
+            <v-col cols="12" sm="12" md="6">
+              <v-select
+                v-model="form.group_id"
+                :items="group_options"
+                item-title="name"
+                item-value="id"
+                label="グループ"
+                variant="underlined"
+                :error-messages="form.errors.group_id"
               />
             </v-col>
             <v-col cols="12" sm="12" md="6">
@@ -72,10 +94,10 @@ import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue'
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <Link href="/admin/user" as="div">
+          <Link href="/admin/admin" as="div">
             <v-btn text>キャンセル</v-btn>
           </Link>
-          <v-btn type="submit" color="primary">更新</v-btn>
+          <v-btn type="submit" color="primary">登録</v-btn>
         </v-card-actions>
       </v-form>
     </v-card>
@@ -86,25 +108,26 @@ import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue'
 import L from 'leaflet';
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 export default {
-  props: ['group_options', 'record'],
+  props: ['group_options'],
   data() {
     return {
       breadcrumbs: [
         {
-          title: 'ユーザー一覧',
+          title: '管理者一覧',
           disabled: false,
-          href: '/admin/user',
+          href: '/admin/admin',
         },
         {
-          title: '編集',
+          title: '新規登録',
           disabled: true,
         },
       ],
       form: useForm({
-        id: null,
+        group_id: null,
         name: null,
         email: null,
         password: null,
+        role: null,
         pref: null,
         init_lat: null,
         init_long: null,
@@ -114,14 +137,9 @@ export default {
   },
   mounted() {
     const self = this
-    self.form.id = self.record.id
-    self.form.name = self.record.name
-    self.form.email = self.record.email
-    self.form.password = self.record.password
-    self.form.pref = self.record.pref
-    self.form.init_lat = self.record.init_lat
-    self.form.init_long = self.record.init_long
-    
+    self.group_options = self.$page.props.group_options
+    self.form.init_lat = self.constant.map.init_pos.lat
+    self.form.init_long = self.constant.map.init_pos.long
     self.map_default_option = self.constant.map
     
     self.map = L.map('map').setView(self.map_default_option.view,self.map_default_option.zoom);
@@ -142,9 +160,9 @@ export default {
   },
   methods: {
     submit() {
-      this.form.patch('/admin/user/' + this.record.id, {
+      this.form.post('/admin/admin', {
         onSuccess: () => {
-          router.visit('/admin/user')
+          router.visit('/admin/admin')
         },
       })
     }

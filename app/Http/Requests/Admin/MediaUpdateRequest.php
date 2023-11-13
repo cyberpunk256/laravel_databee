@@ -24,9 +24,9 @@ class MediaUpdateRequest extends FormRequest
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'type' => ["required", "in:" . implode(",", array_column(config('constant.enums.media_types'), 'value'))],
-            'video' => ['nullable', 'required_if:type,1'], // movie,
-            'gpx' => ['nullable', 'required_if:type,1', 'required_if:origin_gpx_path,null'], // gpx,
-            'image' => ['nullable', 'required_unless:type,1', 'required_if:origin_image_path,null'], // image,
+            // 'video' => ['nullable', 'required_if:type,1'], // movie,
+            // 'gpx' => ['nullable', 'required_if:type,1'], // gpx,
+            // 'image' => ['nullable', 'required_unless:type,1'], // image,
             'image_lat' => ['nullable'],
             'image_long' => ['nullable'],
             'origin_video_path' => ['nullable'],

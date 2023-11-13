@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import Breadcrumbs from '@/Components/Breadcrumbs.vue'
+import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue'
 import Form from './Form.vue';
 
 const breadcrumbs = ref([
@@ -35,6 +35,7 @@ const breadcrumbs = ref([
       </v-col>
     </v-row>
     <Form 
+      type="new"
       :tab="tab"
       :method="method"
       :data="null"

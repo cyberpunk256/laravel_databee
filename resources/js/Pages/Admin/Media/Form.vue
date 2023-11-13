@@ -70,8 +70,8 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
           />
         </template>
         <template v-if="form.type == 2 || form.type == 3">
-          <v-text-field v-model="form.image_lat" label="緯度" variant="underlined" />
-          <v-text-field v-model="form.image_long" label="経度" variant="underlined"/>
+          <v-text-field v-model="form.image_lat" label="経度" variant="underlined" />
+          <v-text-field v-model="form.image_long" label="緯度" variant="underlined"/>
         </template>
       </v-card-text>
       <v-divider></v-divider>
@@ -99,7 +99,7 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
           </Link>
         </v-col>
         <v-col cols="auto">
-          <v-btn @click.stop="onSubmit" color="primary">保存する</v-btn>
+          <v-btn @click.stop="onSubmit" color="primary">{{ type == 'new' ? '登録' : '更新' }}</v-btn>
         </v-col>
       </v-row>
     </template>
@@ -109,9 +109,7 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
 <script>
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 export default {
-  watch: {
-  },
-  props: ['tab', 'method', 'record', 'action'],
+  props: ['tab', 'type', 'record', 'action'],
   data() {
     return {
       form: useForm({
@@ -137,7 +135,6 @@ export default {
   },
   mounted() {
     if(this.record) {
-      console.log('record', this.record);
       this.form = useForm({
         name: this.record.name,
         video: null,
@@ -146,6 +143,9 @@ export default {
         type: this.record.type,
         image_lat: this.record.image_lat,
         image_long: this.record.image_long,
+        origin_video_path: null,
+        origin_image_path: null,
+        origin_gpx_path: null,
       })
       if(this.record.type == 1) { // video 
         this.form.origin_video_path = this.record.media_path
@@ -153,7 +153,6 @@ export default {
       } else {
         this.form.origin_image_path = this.record.media_path
       }
-      console.log('this.form', this.form);
     }
   },
   methods: {
@@ -165,7 +164,6 @@ export default {
       }
       this.form.image_lat = data.image_lat
       this.form.image_long = data.image_long
-      console.log('form',this.form)
     },
     onValidate() {
       let errors = {}
@@ -199,7 +197,6 @@ export default {
         ...this.upload_status,
         [field]: value
       }
-      console.log('this.uploadd_status', this.upload_status)
     },
     onPreview() {
       if (this.onValidate()) {
@@ -222,7 +219,9 @@ export default {
     },
     onSubmit() {
       const self = this
-      this.form.submit(this.method, this.action, {
+      const method = this.type == 'new' ? 'post' : 'put'
+      const action = this.type == 'new' ? '/admin/media' : `/admin/media/${this.record.id}`
+      this.form.submit(method, action, {
         onSuccess: () => {
           router.visit('/admin/media')
         },

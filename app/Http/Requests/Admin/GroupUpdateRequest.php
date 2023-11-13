@@ -5,7 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Http\Requests\Request;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UserUpdateRequest extends FormRequest
+class GroupUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,11 +27,6 @@ class UserUpdateRequest extends FormRequest
     {
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$this->id],
-            'password' => [$this->id ? 'nullable' : 'required', 'string', 'min:8'],
-            'pref' => ['required'],
-            'init_lat' => ['required'],
-            'init_long' => ['required'],
         ];
         return $rules;
     }
@@ -44,12 +39,7 @@ class UserUpdateRequest extends FormRequest
     public function attributes()
     {
         return [
-            'name' => '名前',
-            'email' => 'メールアドレス',
-            'password' => 'パスワード',
-            'pref' => '都道府県',
-            'init_lat' => '初期ポジション緯度',
-            'init_long' => '初期ポジション緯度',
+            'name' => 'グループ名',
         ];
     }
 

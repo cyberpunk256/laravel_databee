@@ -23,14 +23,16 @@ export default {
                 toast.success(this.flash.success, { timeout: 1000 });
             } else if (this.flash.error) {
                 toast.error(this.flash.error, { timeout: 1000 });
-            } else if(status) {
-                if(status == 'success') {
-                    toast.success(message, { timeout: 1000 });
-                } else {
-                    toast.error(message, { timeout: 1000 });
-                }
             } else {
-                toast.error("エラーが発生しました。", { timeout: 1000 });
+                if(status) {
+                    if(status == 'success') {
+                        toast.success(message, { timeout: 1000 });
+                    } else {
+                        toast.error(message, { timeout: 1000 });
+                    }
+                } else {
+                    toast.error("エラーが発生しました。", { timeout: 1000 });
+                }
             }
         },
         get_path_url(path) {

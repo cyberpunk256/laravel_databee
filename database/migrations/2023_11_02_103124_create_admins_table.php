@@ -13,15 +13,20 @@ return new class extends Migration
     {
         Schema::create('admins', function (Blueprint $table) {
             $table->id();
+            $table->tinyInteger('role')->default(1)->nullable(); // config('constant.enums.roles')
+            $table->bigInteger('group_id')->nullable()->unsigned()->comment('グループID');
+            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
+            
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('area_code')->nullable(); 
-            $table->string('ini_position')->nullable(); 
+
+            $table->tinyInteger('pref')->nullable(); 
+            $table->string('init_lat')->nullable();
+            $table->string('init_long')->nullable();
             
             $table->rememberToken();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

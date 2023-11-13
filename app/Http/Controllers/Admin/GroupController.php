@@ -7,14 +7,14 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\UserUpdateRequest;
-use App\Models\User;
+use App\Http\Requests\Admin\GroupUpdateRequest;
+use App\Models\Group;
 
-class UserController extends Controller
+class GroupController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query()->when($request->get('search'), function ($query, $search) {
+        $query = Group::query()->when($request->get('search'), function ($query, $search) {
             return $query->where('name', 'LIKE', "%$search%");
         })->when($request->get('sort'), function ($query, $sortBy) {
             return $query->orderBy($sortBy['key'], $sortBy['order']);
@@ -24,50 +24,48 @@ class UserController extends Controller
         if($limit < 0) $limit = 0;
         $data = $query->paginate($limit);
 
-        return Inertia::render('Admin/User/Index', [
+        return Inertia::render('Admin/Group/Index', [
             'data' => $data
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Admin/User/Create');
+        return Inertia::render('Admin/Group/Create');
     }
 
-    public function store(UserUpdateRequest $request)
+    public function store(GroupUpdateRequest $request)
     {
-        $data = $request->only(['name', 'email', 'password', 'pref', 'init_lat', 'init_long']);
-        $data['password'] = Hash::make($data['password']);
-        $data['email_verified_at'] = now();
-        User::create($data);
+        $data = $request->only(['name']);
+        Group::create($data);
 
         return back()->with(['success' => __("success_save")]);
     }
 
-    public function edit(User $user)
+    public function edit(Group $group)
     {
-        return Inertia::render('Admin/User/Edit', [
-            'record' => $user
+        return Inertia::render('Admin/Group/Edit', [
+            'person' => $group
         ]);
     }
 
-    public function update(User $user, UserUpdateRequest $request)
+    public function update(Group $group, GroupUpdateRequest $request)
     {
-        $data = $request->only(['name', 'email', 'password', 'pref', 'init_lat', 'init_long']);
+        $data = $request->only(['name', 'email', 'password', 'gender', 'phone', 'address']);
 
         if(!isset($data['password'])) {
             unset($data['password']);
         } else {
             $data['password'] = Hash::make($data['password']);
         }
-        $user->update($data);
+        $group->update($data);
 
         return back()->with('success', __('success_update'));
     }
 
-    public function destroy(User $user)
+    public function destroy(Group $group)
     {
-        $user->delete();
+        $group->delete();
 
         return back()->with('success', __('success_delete'));
     }

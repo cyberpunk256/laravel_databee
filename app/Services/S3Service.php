@@ -85,7 +85,7 @@ class S3Service
         foreach ($files as $file) {
             $this->s3client->deleteObject([
                 'Bucket' => config('filesystems.disks.s3.bucket'),
-                'Key' => $file,
+                'Key' => $file['Key'],
             ]);
         }
         // return $this->s3client->deleteObjects([

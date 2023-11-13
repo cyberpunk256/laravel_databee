@@ -19,7 +19,6 @@ return new class extends Migration
             $table->foreign('capture_id')->references('id')->on('captures')->onDelete('cascade');
             
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

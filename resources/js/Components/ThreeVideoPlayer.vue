@@ -36,7 +36,8 @@ export default {
       progress: 0,
       disabled: false,
       step: 2,
-      is_capturing: false
+      is_capturing: false,
+      capture: null
     };
   },
   mounted() {
@@ -74,6 +75,12 @@ export default {
         self.progress = (currentTime / duration) * 100;
       });
       self.video.currentTime = self.time
+      this.animate()
+    },
+    animate(){
+      const self = this
+      requestAnimationFrame(self.animate);
+      self.viewer.renderer.domElement.toBlob(function(blob) { self.capture = blob; }, "image/jpg")
     },
     onPause() {
       this.video.pause();
@@ -104,16 +111,13 @@ export default {
       this.video.currentTime = time;
     },
     async onCapture() {
-      if(!this.viewer) return;
       const self = this
+      if(!this.capture) return
       try {
-        this.is_capturing = true
-        const image = new Image();
-        image.src = this.viewer.renderer.domElement.toDataURL();
-        let formData = new FormData();
-        formData.append('file', image);
-        console.log("formdata'", formData)
-        const camera = this.viewer.getCamera();
+        self.is_capturing = true
+        const formData = new FormData();
+        formData.append('file', self.capture, ' capture.jpg');
+        const camera = self.viewer.getCamera();
         const rotation_vector = camera.rotation;  // カメラの回転情報を取得
         const rotation = {
           x: rotation_vector.x,
@@ -121,8 +125,7 @@ export default {
           z: rotation_vector.z,
         }
         const zoom = camera.zoom;
-        let latlng = this.nearsetLatLng(this.video.currentTime)
-        console.log('latlng', latlng)
+        let latlng = self.nearsetLatLng(self.video.currentTime)
         latlng = latlng ? { 
           lat: latlng.lat,
           lng: latlng.lng,
@@ -130,18 +133,17 @@ export default {
           lat: null,
           lng: null,
         }
-        const params = {
-          media_id: self.id,
-          // file_str: file_str,
-          playtime: self.video.currentTime.toFixed(2),
-          rotation: JSON.stringify(rotation),
-          zoom: zoom.toFixed(2),
-          lat: latlng.lat,
-          long: latlng.lng,
-        }
-        const { data } = await axios.post('/api/capture/file_upload', formData, {
+        formData.append('media_id', self.id);
+        formData.append('playtime', self.video.currentTime.toFixed(2));
+        formData.append('rotation', JSON.stringify(rotation));
+        formData.append('zoom', zoom.toFixed(2));
+        formData.append('lat', latlng.lat);
+        formData.append('long', latlng.lng);
+        const { data } = await axios.post('/api/capture', formData, {
           headers: {
-              'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
+            contentType: false,
+            processData: false,
           }
         })
         if(data.success) {
@@ -149,12 +151,20 @@ export default {
         } else {
           self.show_toast("error", data.error)
         }
+      
       } catch(e) {
         console.log(e)
         self.show_toast()
       } finally {
-        this.is_capturing  =false
+        self.is_capturing  =false
       }
+      // const canvas = document.createElement('canvas');
+      // const context = canvas.getContext('2d');
+      // canvas.width = window.innerWidth;
+      // canvas.height = window.innerHeight;
+      // context.drawImage(self.viewer.renderer.domElement, 0, 0, canvas.width, canvas.height);
+      // canvas.toBlob(async function(blob) {
+      // }, "image/jpg");
     }
   },
 };

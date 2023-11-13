@@ -48,7 +48,7 @@ import Panorama from '@/Components/Panorama.vue';
 
 export default {
   components: { ThreeVideoPlayer, Panorama },
-  props: ['type', 'records'],
+  props: ['records'],
   data() {
     return {
       map: null,
@@ -77,9 +77,13 @@ export default {
     };
   },
   mounted() {
+    console.log('thisuser', this.user)
     const self = this
+    const init_pos = this.user.init_lat && this.user.init_long ? 
+      [this.user.init_lat, this.user.init_long] :
+      self.map_default_option.view
     self.map_default_option = this.constant.map
-    self.map = L.map('map').setView(self.map_default_option.view,self.map_default_option.zoom);
+    self.map = L.map('map').setView(init_pos,self.map_default_option.zoom);
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
     }).addTo(self.map)
@@ -87,7 +91,6 @@ export default {
       const record = self.records[i];
       if(record.type == 1) { // video
         const gpx_url = self.get_path_url(record.gpx_path)
-        console.log('gpx_url', gpx_url)
         new L.GPX(gpx_url, this.gpxOptions)
           .on('loaded', self.onGpxLoaded)
           .on('click', function() {
@@ -110,7 +113,7 @@ export default {
   watch: {
     loaded_gpxs(new_loaded_gpxs) {
       if(new_loaded_gpxs == this.records.length) {
-        this.map.fitBounds(this.bounds_sum);
+        // this.map.fitBounds(this.bounds_sum);
       }
     },
   },

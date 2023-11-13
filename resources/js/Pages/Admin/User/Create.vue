@@ -1,23 +1,6 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import Breadcrumbs from '@/Components/Breadcrumbs.vue'
-import { Head, Link, useForm, router } from '@inertiajs/vue3'
-const form = useForm({
-  name: null,
-  email: null,
-  password: null,
-  phone: null,
-  gender: null,
-  address: null,
-})
-
-const submit = () => {
-  form.post('/admin/user', {
-    onSuccess: () => {
-      router.visit('/admin/user')
-    },
-  })
-}
+import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue'
 </script>
 
 <template>
@@ -32,17 +15,6 @@ const submit = () => {
           <v-row>
             <v-col cols="12" sm="12" md="6">
               <v-text-field v-model="form.name" label="名前" variant="underlined" :error-messages="form.errors.name" />
-            </v-col>
-            <v-col cols="12" sm="12" md="6">
-              <v-select
-                v-model="form.gender"
-                :items="genders"
-                item-title="text"
-                item-value="value"
-                label="性別"
-                variant="underlined"
-                :error-messages="form.errors.gender"
-              />
             </v-col>
             <v-col cols="12" sm="12" md="6">
               <v-text-field
@@ -63,21 +35,38 @@ const submit = () => {
               />
             </v-col>
             <v-col cols="12" sm="12" md="6">
-              <v-text-field
-                v-model="form.phone"
-                label="電話番号"
+              <v-select
+                v-model="form.pref"
+                :items="constant.enums.prefs"
+                item-title="text"
+                item-value="value"
+                label="エリア"
                 variant="underlined"
-                type="tel"
-                :error-messages="form.errors.phone"
+                :error-messages="form.errors.pref"
               />
             </v-col>
             <v-col cols="12" sm="12" md="6">
               <v-text-field
-                v-model="form.address"
-                label="住所"
+                disabled
+                v-model="form.init_lat"
+                label="初期ポジション緯度"
                 variant="underlined"
-                :error-messages="form.errors.address"
+                type="text"
+                :error-messages="form.errors.init_lat"
               />
+            </v-col>
+            <v-col cols="12" sm="12" md="6">
+              <v-text-field
+                disabled
+                v-model="form.init_long"
+                label="初期ポジション緯度"
+                variant="underlined"
+                type="text"
+                :error-messages="form.errors.init_long"
+              />
+            </v-col>
+            <v-col cols="12" sm="12">
+              <div id="map" class="input_map"></div>
             </v-col>
           </v-row>
         </v-card-text>
@@ -94,16 +83,12 @@ const submit = () => {
 </template>
 
 <script>
+import L from 'leaflet';
+import { Head, Link, useForm, router } from '@inertiajs/vue3'
 export default {
-  methods: {
-  },
-  name: 'UserCreate',
+  props: ['group_options'],
   data() {
     return {
-      genders: [
-        { text: '男性', value: 'male' },
-        { text: '女性', value: 'female' }, 
-      ],
       breadcrumbs: [
         {
           title: 'ユーザー一覧',
@@ -115,7 +100,47 @@ export default {
           disabled: true,
         },
       ],
+      form: useForm({
+        name: null,
+        email: null,
+        password: null,
+        pref: null,
+        init_lat: null,
+        init_long: null,
+      }),
+      group_options: []
     }
   },
+  mounted() {
+    const self = this
+    self.form.init_lat = self.constant.map.init_pos.lat
+    self.form.init_long = self.constant.map.init_pos.long
+    self.map_default_option = self.constant.map
+    
+    self.map = L.map('map').setView(self.map_default_option.view,self.map_default_option.zoom);
+    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
+    }).addTo(self.map)
+    const pin_marker = L.marker([self.form.init_lat, self.form.init_long], { draggable: true })
+      .addTo(self.map);
+
+    // マウススクロールイベントのリスナーを追加
+    pin_marker.on('dragstart', function (e) {
+    });
+    pin_marker.on('dragend', function (e) {
+      var newPosition = pin_marker.getLatLng();
+      self.form.init_lat = newPosition.lat
+      self.form.init_long = newPosition.lng
+    });
+  },
+  methods: {
+    submit() {
+      this.form.post('/admin/user', {
+        onSuccess: () => {
+          router.visit('/admin/user')
+        },
+      })
+    }
+  },  
 }
 </script>

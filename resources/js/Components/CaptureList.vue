@@ -2,6 +2,8 @@
     <div class="pa-8">
         <v-row>
             <v-data-table-server
+            v-if="show_table"
+            ref="table"
             v-model="selectedRecords"
             :items="captureData.data"
             :items-length="captureData.total"
@@ -13,13 +15,15 @@
             show-select
             >
                 <template #[`item.url`]="{ item }">
-                    <v-img 
-                    :src="get_path_url(item.raw.url)"
-                    width="auto" 
-                    max-width="80" 
-                    max-height="80"
-                    cover
-                    ></v-img>
+                    <div class="pa-2">
+                        <v-img 
+                        :src="get_path_url(item.raw.url)"
+                        width="auto" 
+                        max-width="80" 
+                        max-height="80"
+                        cover
+                        ></v-img>
+                    </div>
                 </template>
                 <template #[`item.updated_at`]="{ item }">
                     {{ getYmdHiFromDTS(item.raw.updated_at) }}
@@ -61,12 +65,15 @@
 </template>
 
 <script>
+import JSZip from 'jszip';
+
 export default {
     data() {
         return {
             isLoading: false,
             deleteDialog: false,
             selectedRecords: [],
+            show_table: true,
             search: null,
             headers: [
                 { title: 'ID', key: 'id', sortable: false },
@@ -103,13 +110,19 @@ export default {
             }
         },
         async onRemoveSelected() {
+            const self = this
             try {
-                const { data } = axios.post(`/api/capture/delete_records`, {
+                this.deleteDialog = false
+                this.isLoading = true
+                const { data } = await axios.post(`/api/capture/delete_records`, {
                     ids: this.selectedRecords
                 })
                 if(data.success) {
                     this.show_toast("success", data.success)
-                    this.deleteDialog = false
+                    this.show_table = false
+                    this.$nextTick(() => {
+                        self.show_table = true
+                    })
                 }
             } catch(e) {
                 console.log(e)
@@ -121,8 +134,27 @@ export default {
         onRemoveConfirm() {
             this.deleteDialog = true
         },
-        onDownload() {
+        async onDownload() {
+            const self = this
+            const zip = new JSZip();
 
+            // 画像ファイルのURL一覧からZIPに追加
+            await Promise.all(this.captureData.data.map(async (capture, index) => {
+                const response = await fetch(self.get_path_url(capture.url));
+                const imageData = await response.blob();
+                zip.file(`${capture.id}.jpg`, imageData);
+            }));
+
+            // ZIPファイルを生成
+            const content = await zip.generateAsync({ type: 'blob' });
+
+            // ZIPファイルをダウンロード
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = 'captures.zip';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     }
 }

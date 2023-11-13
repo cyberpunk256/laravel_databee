@@ -18,11 +18,11 @@ return new class extends Migration
 
             $table->string('name')->nullable(); 
             $table->tinyInteger('type')->default(1)->comment('種別'); // config/const.php 3DMovie
-            $table->double('video_duration', 10, 2)->nullable()->comment('second'); 
+            $table->string('video_duration')->nullable()->comment('second'); 
             $table->string('media_path')->nullable(); 
             $table->string('gpx_path')->nullable(); 
-            $table->double('image_lat', 11, 8)->nullable();
-            $table->double('image_long', 11, 8)->nullable();
+            $table->string('image_lat')->nullable();
+            $table->string('image_long')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

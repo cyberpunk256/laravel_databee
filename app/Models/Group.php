@@ -9,7 +9,7 @@ use DateTimeInterface;
 
 class Group extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'name',
@@ -25,5 +25,13 @@ class Group extends Model
     protected function serializeDate(DateTimeInterface $date)
     {
         return $date->format('Y-m-d H:i:s');
+    }
+
+    public function admins() {
+        return $this->hasMany(Admin::class);
+    }
+    
+    public function users() {
+        return $this->hasMany(User::class);
     }
 }

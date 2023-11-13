@@ -12,7 +12,7 @@ use DateTimeInterface;
 
 class Admin extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $guard = 'admin';    
 
@@ -20,8 +20,11 @@ class Admin extends Authenticatable
         'name', 
         'email', 
         'password',
-        'area_code',
-        'ini_position',
+        'group_id',
+        'role',
+        'pref',
+        'init_lat',
+        'init_long',
         'deleted_at'
     ];    
     protected $hidden = [
@@ -41,5 +44,9 @@ class Admin extends Authenticatable
 
     public function medias() {
         return $this->hasMany(Media::class);
+    }
+
+    public function group() {
+        return $this->belongsTo(Group::class);
     }
 }

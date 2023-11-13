@@ -7,7 +7,7 @@ import { Head, Link } from '@inertiajs/vue3'
 <template>
   <AdminLayout>
     <div class="mb-5">
-      <h5 class="text-h5 font-weight-bold">ユーザー一覧</h5>
+      <h5 class="text-h5 font-weight-bold">管理者一覧</h5>
     </div>
     <v-card class="pa-4">
       <div class="d-flex flex-wrap align-center">
@@ -21,7 +21,7 @@ import { Head, Link } from '@inertiajs/vue3'
           single-line
         />
         <v-spacer />
-        <Link href="/admin/user/create" as="div">
+        <Link href="/admin/admin/create" as="div">
           <v-btn color="primary">新規登録</v-btn>
         </Link>
       </div>
@@ -34,11 +34,17 @@ import { Head, Link } from '@inertiajs/vue3'
         :loading="isLoadingTable"
         @update:options="loadItems"
       >
+        <template #[`item.role`]="{ item }">
+          {{ getTextOfOption(constant.enums.roles, item.raw.role) }}
+          </template>
+        <template #[`item.group_name`]="{ item }">
+          {{ item.raw.group ? item.raw.group.name : null }}
+        </template>
         <template #[`item.pref`]="{ item }">
           {{ getTextOfOption(constant.enums.prefs, item.raw.pref) }}
         </template>
         <template #[`item.action`]="{ item }">
-          <Link :href="`/admin/user/${item.value}/edit`" as="button">
+          <Link :href="`/admin/admin/${item.value}/edit`" as="button">
             <v-icon color="warning" icon="mdi-pencil" size="small" />
           </Link>
           <v-icon class="ml-2" color="error" icon="mdi-delete" size="small" @click="deleteItem(item)" />
@@ -62,7 +68,6 @@ import { Head, Link } from '@inertiajs/vue3'
 
 <script>
 export default {
-  name: 'PeopleIndex',
   props: {
     data: {
       type: Object,
@@ -71,6 +76,8 @@ export default {
   data() {
     return {
       headers: [
+        { title: '権限', key: 'role', sortable: false },
+        { title: 'グループ', key: 'group_name', sortable: false },
         { title: '名前', key: 'name', sortable: false },
         { title: 'メールアドレス', key: 'email', sortable: false },
         { title: '都道府県', key: 'pref', sortable: false },
@@ -102,7 +109,7 @@ export default {
       if (search) {
         params.search = search
       }
-      this.$inertia.get('/admin/user', params, {
+      this.$inertia.get('/admin/admin', params, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {
@@ -116,7 +123,7 @@ export default {
     },
     submitDelete() {
       this.isLoading = true
-      this.$inertia.delete(`/admin/user/${this.deleteId}`, {
+      this.$inertia.delete(`/admin/admin/${this.deleteId}`, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {

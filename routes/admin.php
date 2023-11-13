@@ -2,11 +2,15 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GroupController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\CaptureController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -25,10 +29,9 @@ Route::middleware('guest:admin')->group(function () {
     Route::post('login', [LoginController::class, 'store'])->name('login.store');
 });
 
-Route::middleware('auth.admin')->group(function () {
+Route::middleware('auth.admin:1,2,3')->group(function () {
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/', [DashboardController::class, 'index'])->name('index');
-    Route::resource('user', UserController::class)->except(['show']);
     Route::get('media/preview', [MediaController::class, 'preview'])->name('media.preview');
     Route::post('media/delete_records', [MediaController::class, 'deleteRecords'])->name('media.deleteRecords');
     Route::post('media/new_presigned_url', [MediaController::class, 'createPresignedUrl'])->name('media.createPresignedUrl');
@@ -37,3 +40,9 @@ Route::middleware('auth.admin')->group(function () {
 });
 
    
+Route::middleware('auth.admin:1')->group(function () {
+    Route::resource('admin', AdminController::class)->except(['show']);
+    Route::resource('user', UserController::class)->except(['show']);
+    Route::resource('group', GroupController::class)->except(['show']);
+    Route::resource('capture', CaptureController::class)->except(['show','create','update']);
+});

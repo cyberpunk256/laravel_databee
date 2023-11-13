@@ -14,11 +14,16 @@ class AdminAuth
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (!Auth::guard('admin')->check()) {
             return redirect()->route('admin.login');
-        }        
+        } 
+        $roles = empty($roles) ? [] : $roles;
+        $role = Auth::guard('admin')->user()->role;
+        if(!in_array(strval($role), $roles)) {
+            return redirect()->route('admin.index');
+        }
         return $next($request);
     }
 }

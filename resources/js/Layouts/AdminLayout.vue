@@ -50,7 +50,6 @@ export default {
     },
   },
   mounted() {
-    console.log('this.$page.props', this.$page.props)
     this.drawer = !this.$vuetify.display.mobile
   },
 }

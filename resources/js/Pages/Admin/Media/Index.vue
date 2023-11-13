@@ -1,6 +1,6 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import Breadcrumbs from '@/Components/Breadcrumbs.vue'
+import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue'
 import { Head, Link } from '@inertiajs/vue3'
 </script>
 
@@ -72,7 +72,7 @@ import { Head, Link } from '@inertiajs/vue3'
         <template #bottom="{ item }">
           <v-row>
             <v-col cols="auto">
-              <v-btn @click="onRemoveConfirm" color="red" hide-details>選択したメディを削除</v-btn>
+              <v-btn :disabled="selectedItems.length = 0" @click="onRemoveConfirm" color="red" hide-details>選択したメディを削除</v-btn>
             </v-col>
             <v-spacer></v-spacer>
             <v-col cols="auto">
@@ -169,7 +169,6 @@ export default {
       this.deleteDialog = true
     },
     onRemoveSelected() {
-      console.log('selectedItems', this.selectedItems);
       this.$inertia.post(`/admin/media/delete_records`, {
         ids: this.selectedItems
       }, {

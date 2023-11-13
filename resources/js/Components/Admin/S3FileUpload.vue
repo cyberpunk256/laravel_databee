@@ -50,7 +50,8 @@ import Panorama from '@/Components/Panorama.vue';
 import { Link } from '@inertiajs/vue3'
 import ExifReader from 'exifreader';
 
-export default {  props: [ 'type', 'label', 'error', 'origin' ],
+export default {  
+  props: [ 'type', 'label', 'error', 'origin' ],
   components: { ThreeVideoPlayer, Panorama, Link },
   data() {
     return {
@@ -66,16 +67,24 @@ export default {  props: [ 'type', 'label', 'error', 'origin' ],
     }
   },
   mounted() {
+    console.log('this.type', this.type)
+    console.log('this.label', this.label)
+    console.log('this.error', this.error)
+    // console.log('this.origin', this.origin)
     this.init_data();
     this.init_dropzone();
   },
   methods: {
     onRemoveOrigin() {
+      const self = this
       this.$emit('removeOrign')
       this.$nextTick(() => {
-        if(!this.dropzone) {
-          this.init_dropzone()
-        }
+        console.log('nextTick')
+        console.log('self.dropzone', self.dropzone)
+        // if(!self.dropzone) {
+          console.log('nextTick-dropzone')
+          self.init_dropzone()
+        // }
       })
     },
     init_data() {
@@ -116,7 +125,8 @@ export default {  props: [ 'type', 'label', 'error', 'origin' ],
     },
     init_dropzone() {
       const self = this
-      if(!this.$refs.dropzone) return
+      // console.log('self.origin', self.origin)
+      // if(self.origin) return
       this.dropzone = new Dropzone(this.$refs.dropzone, {
         url: '/',
         method: 'put',
@@ -136,7 +146,6 @@ export default {  props: [ 'type', 'label', 'error', 'origin' ],
       })
       
       this.dropzone.on("addedfile", async function(file) {
-        console.log('file', file);
         if (this.files.length > 1) {
           this.removeFile(this.files[0]);
         }
@@ -154,7 +163,7 @@ export default {  props: [ 'type', 'label', 'error', 'origin' ],
               image_lat: null,
               image_long: null,
             })
-            video.parentNode.removeChild(video);
+            video.remove()
             URL.revokeObjectURL(video.src);
           });
           video.load();
@@ -172,7 +181,6 @@ export default {  props: [ 'type', 'label', 'error', 'origin' ],
                   image_long: tags.GPSLongitude.description,
                 }
               }
-              console.log('tags', tags)
             } catch(e) {
               console.log(e)
             }
