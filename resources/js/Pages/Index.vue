@@ -88,7 +88,13 @@ export default {
         },
         gpx_options: {
           joinTrackSegments: false
-        }, 
+        },
+        polyline_options: {
+          color: 'red', // Change the line color if needed
+          weight: 5, // Set the thickness of the line
+          opacity: 0.7,
+          lineCap: 'round'
+        }
       }
     };
   },

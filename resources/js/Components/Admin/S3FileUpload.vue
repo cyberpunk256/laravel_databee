@@ -28,7 +28,7 @@
       </template>
       <template v-if="type == 'gpx' && origin">
         <v-list>
-          <Link :href="get_path_url(origin)" target="_blank">{{ origin }}</Link>
+          <Link :href="get_path_url(origin)" target="_blank">{{ get_path_url(origin) }}</Link>
         </v-list>
         <v-btn @click="onRemoveOrigin" color="primary" class="mt-2">GPXファイルを削除</v-btn>
       </template>
@@ -40,6 +40,24 @@
     </template>
     <v-input :error-messages="error">
     </v-input>
+    <v-dialog v-model="encodeDialog" persistent width="auto">
+      <v-card>
+        <v-card-text>エンコード中・・・</v-card-text>
+        <v-divider></v-divider>
+        <v-progress-linear
+          :model-value="encodePercent"
+          color="light-blue"
+          height="10"
+          striped
+          class="mb-2"
+        ></v-progress-linear>
+        <v-row class="my-0" justify="center">
+          <v-col cols="auto">
+            <v-btn @click="onStopEncode">キャンセル</v-btn>
+          </v-col>
+        </v-row>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -49,6 +67,10 @@ import ThreeVideoPlayer from '@/Components/Admin/ThreeVideoPlayer.vue';
 import Panorama from '@/Components/Panorama.vue';
 import { Link } from '@inertiajs/vue3'
 import ExifReader from 'exifreader';
+import { FFmpeg } from '@ffmpeg/ffmpeg'
+import { fetchFile, toBlobURL } from '@ffmpeg/util'
+const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.4/dist/esm'
+const videoURL = 'https://raw.githubusercontent.com/ffmpegwasm/testdata/master/Big_Buck_Bunny_180_10s.webm'
 
 export default {  
   props: [ 'type', 'label', 'error', 'origin' ],
@@ -63,7 +85,14 @@ export default {
       video_duration: null,
       image_lat: null,
       image_long: null,
-      dropzone: null
+      dropzone: null,
+      encodeDialog: false,
+      ffmpegObj: null,
+      inputFilePath: "input.mp4",
+      outputFilePath: "output.mp4",
+      encodeWidth: 2880,
+      encodePercent: 0,
+      encodeComplete: false
     }
   },
   mounted() {
@@ -125,8 +154,6 @@ export default {
     },
     init_dropzone() {
       const self = this
-      // console.log('self.origin', self.origin)
-      // if(self.origin) return
       this.dropzone = new Dropzone(this.$refs.dropzone, {
         url: '/',
         method: 'put',
@@ -151,22 +178,9 @@ export default {
         }
         const extension = file.name.split('.').pop().toLowerCase()
         if(file.type.indexOf('video/') > -1) {
-          const video = document.createElement('video');
-          video.src = URL.createObjectURL(file);
-
-          // Listen for the 'loadedmetadata' event to get the duration
-          video.addEventListener('loadedmetadata', function() {
-            self.init_presigned_upload({
-              extension: extension,
-              type: file.type,
-              video_duration: video.duration,
-              image_lat: null,
-              image_long: null,
-            })
-            video.remove()
-            URL.revokeObjectURL(video.src);
-          });
-          video.load();
+          if(!self.encodeComplete) {
+            await self.transcode(file);
+          }
         } else {
           let geo_data = {
             image_lat: null,
@@ -186,8 +200,6 @@ export default {
             }
           }
           self.init_presigned_upload({
-            extension: extension,
-            type: file.type,
             video_duration: null,
             image_lat: geo_data.image_lat,
             image_long: geo_data.image_long,
@@ -197,6 +209,7 @@ export default {
 
       this.dropzone.on("removedFile", function(file) {
         if (this.files.length == 0) {
+          self.encodeComplete = false
           self.$emit("remove")
         }
       });
@@ -229,6 +242,80 @@ export default {
           progressElement.innerHTML = `<span class="dz-status" >${progress_text}%</span><span class="dz-upload" data-dz-uploadprogress style="width: ${progress}%;"></span>`
         }
       })
+    },
+    async transcode(file) {
+      const self = this
+      try {
+        this.loading = true
+        this.encodeDialog = true
+        console.log('file', file)
+        const file_name = file.name
+        const ffmpegObj = new FFmpeg()
+        this.ffmpegObj = ffmpegObj
+        await ffmpegObj.load({
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+          workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript')
+        })
+
+        await ffmpegObj.writeFile(this.inputFilePath, new Uint8Array(await file.arrayBuffer()));
+        await this.dropzone.removeAllFiles()
+        let duration = 0
+        ffmpegObj.on("log", ({ type, message }) => {
+          console.log('type', type)
+          console.log('message', message)
+        })
+        ffmpegObj.on("progress", ({ progress, time }) => {
+          console.log('progress', progress)
+          console.log('time', time)
+          self.encodePercent = parseInt(progress * 100)
+          duration = time
+        })
+        await ffmpegObj.exec([
+            '-i', this.inputFilePath,
+            '-vf', `scale=${this.encodeWidth}:-1`,
+            '-c:a', 'copy',
+            '-c:v', 'libx264',
+            this.outputFilePath
+        ])
+
+        if(this.ffmpegObj) {
+          this.encodeComplete = true
+          const data = await ffmpegObj.readFile(this.outputFilePath)
+          const blob = new Blob([data], { type: 'video/mp4' });
+          const new_file = new File([blob], file_name, { type: 'video/mp4' });
+          this.dropzone.addFile(new_file);
+          self.init_presigned_upload({
+            video_duration: duration / 1000000,
+            image_lat: null,
+            image_long: null,
+          })
+        }
+      } catch(e) {
+        console.log(e)
+      } finally {
+        this.loading = false
+        this.encodeDialog = false
+      }
+    },
+    async onStopEncode() {
+      console.log('onStopEncode')
+      this.encodeDialog = false
+      if(this.ffmpegObj) {
+        try {
+          await this.ffmpegObj.deleteFile(this.inputFilePath)
+        } catch (e) {
+          console.log(e)
+        }
+        try {
+          await this.ffmpegObj.deleteFile(this.outputFilePath)
+        } catch (e) {
+          console.log(e)
+        }
+        this.ffmpegObj.terminate()
+        this.ffmpegObj = null
+        this.dropzone.removeAllFiles();
+      }
     }
   }
 };

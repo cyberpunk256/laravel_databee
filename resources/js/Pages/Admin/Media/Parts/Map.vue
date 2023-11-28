@@ -56,13 +56,13 @@ export default {
         gpx_options: {
           joinTrackSegments: false
         }, 
+        polyline_options: {
+          color: 'red', // Change the line color if needed
+          weight: 5, // Set the thickness of the line
+          opacity: 0.7,
+          lineCap: 'round'
+        }
       },
-      // record: {
-      //   "type": 2,
-      //   "image_path": "tmp/3f445e48-042c-4db6-821e-83e65e4683cc.jpg",
-      //   "image_lat": 35.699777777777776,
-      //   "image_long": 139.7717
-      // }
     };
   },
   mounted() {
