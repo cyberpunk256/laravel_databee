@@ -90,7 +90,8 @@ export default {
       ffmpegObj: null,
       inputFilePath: "input.mp4",
       outputFilePath: "output.mp4",
-      encodeWidth: 2880,
+      // encodeWidth: 2880,
+      encodeWidth: 1920,
       encodePercent: 0,
       encodeComplete: false
     }
@@ -262,12 +263,8 @@ export default {
         await this.dropzone.removeAllFiles()
         let duration = 0
         ffmpegObj.on("log", ({ type, message }) => {
-          console.log('type', type)
-          console.log('message', message)
         })
         ffmpegObj.on("progress", ({ progress, time }) => {
-          console.log('progress', progress)
-          console.log('time', time)
           self.encodePercent = parseInt(progress * 100)
           duration = time
         })
