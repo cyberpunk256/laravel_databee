@@ -36,14 +36,20 @@ export default {
       isPlaying: false,
       progress: 0,
       disabled: false,
-      step: 2
+      step: 2,
+      video_url: null
     };
   },
-  mounted() {
-    this.initVideoPlayer();
+  async mounted() {
+    try {
+      this.video_url = await this.get_video_url(this.url)      
+      this.initVideoPlayer();
+    } catch(e) {
+      console.log(e)
+    }
   },
   methods: {
-    initVideoPlayer() {
+    async initVideoPlayer() {
       const self = this
       // Create a viewer for the panorama
       const viewer = new Viewer({
@@ -52,7 +58,7 @@ export default {
       });
 
       // Create a VideoPanorama with your 360-degree video
-      const panorama = new VideoPanorama(this.url, {
+      const panorama = new VideoPanorama(this.video_url, {
         autoplay: false, // Disable auto-play for custom control handling
       });
 

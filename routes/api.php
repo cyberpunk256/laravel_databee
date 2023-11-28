@@ -25,4 +25,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('capture', [CaptureController::class, 'index'])->name('capture.index');
     Route::post('capture', [CaptureController::class, 'store'])->name('capture.store');
     Route::post('capture/delete_records ', [CaptureController::class, 'deleteRecords'])->name('capture.deleteRecords');
+    Route::get('file', [MediaController::class, 'getFile'])->name('media.getFile');
 });

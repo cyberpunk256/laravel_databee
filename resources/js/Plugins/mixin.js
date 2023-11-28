@@ -35,7 +35,7 @@ export default {
                 }
             }
         },
-        async get_path_url(path) {
+        async get_video_url(path) {
             try {
                 const { data } = await axios.post(`/api/media/presigned_url`, { path: path });
                 return data.presigned_url
@@ -43,6 +43,9 @@ export default {
                 console.log(e);
                 return ""
             }
+        },
+        get_path_url(path) {
+            return "/api/file?path=" + path
         },
         getTextOfOption(options, value) {
             const option = options.find(x => x.value == value)

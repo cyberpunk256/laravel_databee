@@ -190,7 +190,7 @@ export default {
       this.modal_type = record.type
       this.modal_time = time
       if(record.type == 1) {
-        this.modal_video_url = this.get_path_url(record.media_path)
+        this.modal_video_url = record.media_path
         this.modal = true
       } else { // image, panorama
         this.modal_image_url = this.get_path_url(record.media_path)

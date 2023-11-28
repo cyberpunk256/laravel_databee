@@ -22,4 +22,10 @@ class MediaController extends Controller
             'presigned_url' => $presignedUrl
         ]);
     }
+    
+    public function getFile(Request $request) 
+    {
+        $path = $request->input('path');
+        return $this->s3service->getFile($path);
+    }
 }

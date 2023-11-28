@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Aws\S3\S3Client;
+use Illuminate\Filesystem\FilesystemAdapter;
 
 class S3Service
 {
@@ -104,17 +105,17 @@ class S3Service
         return $list['Contents'];
     }
 
-    // public function getFile(String $path) 
-    // {
-    //     $result = $this->s3client->getObject([
-    //         'Bucket' => config('filesystems.disks.s3.bucket'),
-    //         'Key' => $path,
-    //     ]);
+    public function getFile(String $path) 
+    {
+        $result = $this->s3client->getObject([
+            'Bucket' => config('filesystems.disks.s3.bucket'),
+            'Key' => $path,
+        ]);
 
-    //     // Get the contents of the file
-    //     $fileContent = $result['Body']->getContents();
+        // Get the contents of the file
+        $fileContent = $result['Body']->getContents();
 
-    //     // You can then do something with $fileContent, like return it as a response
-    //     return response($fileContent, 200)->header('Content-Type', $result['ContentType']);
-    // }
+        // You can then do something with $fileContent, like return it as a response
+        return response($fileContent, 200)->header('Content-Type', $result['ContentType']);
+    }
 }

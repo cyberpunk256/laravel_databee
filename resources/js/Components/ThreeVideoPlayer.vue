@@ -37,11 +37,17 @@ export default {
       disabled: false,
       step: 2,
       is_capturing: false,
-      capture: null
+      capture: null,
+      video_url: null
     };
   },
-  mounted() {
-    this.initVideoPlayer();
+  async mounted() {
+    try {
+      this.video_url = await this.get_video_url(this.url)      
+      this.initVideoPlayer();
+    } catch(e) {
+      console.log(e)
+    }
   },
   methods: {
     async initVideoPlayer() {
@@ -53,7 +59,7 @@ export default {
       });
 
       // Create a VideoPanorama with your 360-degree video
-      self.panorama = new VideoPanorama(self.url, {
+      self.panorama = new VideoPanorama(self.video_url, {
         autoplay: false, // Disable auto-play for custom control handling
       });
 

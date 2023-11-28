@@ -107,7 +107,7 @@ export default {
     },
     onShowModal() {
       if(this.record.type == 1) {
-        this.modal_video_url = this.get_path_url(this.record.video_path)
+        this.modal_video_url = this.record.video_path
         this.modal = true
       } else { // image, panorama
         this.modal_image_url = this.get_path_url(this.record.image_path)

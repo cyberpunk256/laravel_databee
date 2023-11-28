@@ -4,7 +4,7 @@
       <template v-if="type == 'video' && origin">
         <three-video-player 
           v-if="origin" 
-          :url="get_path_url(origin)"
+          :url="origin"
           class="vp_form_preview"
         />
         <v-btn @click="onRemoveOrigin" color="primary" class="mt-2">3DMovieを削除</v-btn>
@@ -28,7 +28,7 @@
       </template>
       <template v-if="type == 'gpx' && origin">
         <v-list>
-          <Link :href="get_path_url(origin)" target="_blank">{{ get_path_url(origin) }}</Link>
+          <Link :href="get_path_url(origin)" target="_blank">{{ origin }}</Link>
         </v-list>
         <v-btn @click="onRemoveOrigin" color="primary" class="mt-2">GPXファイルを削除</v-btn>
       </template>
