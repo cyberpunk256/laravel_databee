@@ -35,8 +35,14 @@ export default {
                 }
             }
         },
-        get_path_url(path) {
-            return this.constant.bucket_path + path
+        async get_path_url(path) {
+            try {
+                const { data } = await axios.post(`/api/media/presigned_url`, { path: path });
+                return data.presigned_url
+            } catch(e) {
+                console.log(e);
+                return ""
+            }
         },
         getTextOfOption(options, value) {
             const option = options.find(x => x.value == value)

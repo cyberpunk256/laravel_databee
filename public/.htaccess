@@ -2,6 +2,10 @@
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
+    <IfModule mod_headers.c>
+        Header set Cross-Origin-Embedder-Policy "require-corp"
+        Header set Cross-Origin-Opener-Policy "same-origin"
+    </IfModule>
 
     RewriteEngine On
 
