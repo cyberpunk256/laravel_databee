@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
             GroupSeeder::class,
             AdminSeeder::class,
             UserSeeder::class,
-            MediaSeeder::class,
+            // MediaSeeder::class,
         ]);
     }
 }

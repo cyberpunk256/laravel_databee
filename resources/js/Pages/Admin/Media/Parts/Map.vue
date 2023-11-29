@@ -58,8 +58,8 @@ export default {
         }, 
         polyline_options: {
           color: 'blue', // Change the line color if needed
-          weight: 5, // Set the thickness of the line
-          opacity: 0.7,
+          weight: 12, // Set the thickness of the line
+          opacity: 1,
           lineCap: 'round'
         }
       },
