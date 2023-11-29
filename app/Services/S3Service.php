@@ -15,14 +15,21 @@ class S3Service
     protected S3Client $s3client;
     public function __construct()
     {
-        $this->s3client = new S3Client([
-            'region' => config('filesystems.disks.s3.region'), // S3のリージョン
-            'version' => 'latest',
-            'credentials' => [
-                'key' => config('filesystems.disks.s3.key'),
-                'secret' => config('filesystems.disks.s3.secret')
-            ],
-        ]);
+        if(config('app.env') == 'production') {
+            $this->s3client = new S3Client([
+                'region' => config('filesystems.disks.s3.region'), // S3のリージョン
+                'version' => 'latest'
+            ]);
+        } else {
+            $this->s3client = new S3Client([
+                'region' => config('filesystems.disks.s3.region'), // S3のリージョン
+                'version' => 'latest',
+                'credentials' => [
+                    'key' => config('filesystems.disks.s3.key'),
+                    'secret' => config('filesystems.disks.s3.secret')
+                ],
+            ]);
+        }
     }
     
     public function createPresignedUrl(String $path)
