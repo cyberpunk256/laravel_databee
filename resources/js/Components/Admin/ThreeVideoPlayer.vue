@@ -32,7 +32,9 @@ export default {
   props: ['url', 'capture'],
   data() {
     return {
+      viewer: null,
       panorama: null,
+      video: null,
       isPlaying: false,
       progress: 0,
       disabled: false,
@@ -48,25 +50,33 @@ export default {
       console.log(e)
     }
   },
+  async mounted() {
+    try {
+      this.video_url = await this.get_video_url(this.url)      
+      this.initVideoPlayer();
+    } catch(e) {
+      console.log(e)
+    }
+  },
   methods: {
     async initVideoPlayer() {
       const self = this
       // Create a viewer for the panorama
-      const viewer = new Viewer({
+      self.viewer = new Viewer({
         container: this.$refs.vp_wrap,
         controlBar: false
       });
 
       // Create a VideoPanorama with your 360-degree video
-      const panorama = new VideoPanorama(this.video_url, {
+      self.panorama = new VideoPanorama(this.video_url, {
         autoplay: false, // Disable auto-play for custom control handling
       });
 
       // Add the VideoPanorama to the viewer
-      viewer.add(panorama);
+      self.viewer.add(self.panorama);
 
       // Get a reference to the video element
-      this.video = panorama.getVideoElement();
+      this.video = self.panorama.getVideoElement();
       this.video.addEventListener('timeupdate', function() {
           // ビデオの現在の再生時間と総時間を取得
           var currentTime = self.video.currentTime;

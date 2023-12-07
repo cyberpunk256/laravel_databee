@@ -11,7 +11,12 @@
       <v-card class="vp_card">
         <v-btn icon="mdi-close" @click="modal = false" class="vp_close"></v-btn>
         <div class="vp_content">
-          <v-img width="auto" max-width="1200" contain :src="modal_image_url"></v-img>
+          <v-img 
+            lazy-src="/empty.png"
+            v-if="modal" 
+            max-width="1000" 
+            :src="modal_image_url"
+          ></v-img>
         </div>
       </v-card>
     </v-dialog>
@@ -41,7 +46,7 @@ export default {
       map_default_option: {
         view: [0,0],
         pin: [0,0],
-        zoom: 1
+        zoom: 1,
       },
       modal: false,
       modal_video_url: null,
@@ -58,7 +63,7 @@ export default {
         }, 
         polyline_options: {
           color: 'blue', // Change the line color if needed
-          weight: 12, // Set the thickness of the line
+          weight: 10, // Set the thickness of the line
           opacity: 1,
           lineCap: 'round'
         }
@@ -67,8 +72,19 @@ export default {
   },
   mounted() {
     const self = this
-    self.map_default_option = this.constant.map
-    self.map = L.map('map').setView(self.map_default_option.view,self.map_default_option.zoom);
+    self.gpxOptions.polyline_options.weight = self.getLineWeightByZoom(
+      this.constant.map.zoom, 
+      this.constant.map.gpx.weight
+    )
+    const iconSize = self.getMarkerSizeByZoom(self.constant.map.zoom, self.constant.map.marker.size)
+    const marker_icon = L.icon({
+      iconUrl: this.constant.map.marker.icon, // Replace with the path to your image
+      iconSize: [iconSize, iconSize], // Set the size of the icon
+    });
+
+    self.map = L.map('map')
+      .setView(self.constant.map.view,self.constant.map.zoom)
+      .on('zoomend', self.onZoomChange);
 
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
@@ -82,20 +98,21 @@ export default {
             self.onShowModal()
         });
     } else if(self.record.type == 2 || self.record.type == 3) {
+
       const coordinate = (self.record.image_lat && self.record.image_long) ? 
-        [self.record.image_lat, self.record.image_long] : this.map_default_option.pin
+        [self.record.image_lat, self.record.image_long] : self.constant.map.pin
       
-      const pin_marker = L.marker(coordinate, { draggable: true })
+      self.marker = L.marker(coordinate, { icon: marker_icon, draggable: true })
         .addTo(self.map)
         .on('click', function() {
           self.onShowModal()
         });
         
       // マウススクロールイベントのリスナーを追加
-      pin_marker.on('dragstart', function (e) {
+      self.marker.on('dragstart', function (e) {
       });
-      pin_marker.on('dragend', function (e) {
-        var newPosition = pin_marker.getLatLng();
+      self.marker.on('dragend', function (e) {
+        var newPosition = self.marker.getLatLng();
         self.$emit('update', newPosition)
       });
     }
@@ -113,7 +130,7 @@ export default {
         this.modal_image_url = this.get_path_url(this.record.image_path)
         this.modal = true
       }
-    },
+    }
   },
 };
 </script>

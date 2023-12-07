@@ -155,6 +155,7 @@ export default {
     },
     init_dropzone() {
       const self = this
+      if(!this.$refs.dropzone) return
       this.dropzone = new Dropzone(this.$refs.dropzone, {
         url: '/',
         method: 'put',

@@ -1,6 +1,7 @@
 import 'vue-toastification/dist/index.css'
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 import { useToast } from "vue-toastification"
+import L from 'leaflet';
 const toast = useToast()
 
 export default {
@@ -56,5 +57,41 @@ export default {
                 .add(apply_limit, "days")
                 .format("YYYY年MM月DD日 HH:mm")
         },
+        onZoomChange() {
+          const self = this
+          if(this.map) {
+            const zoom = this.map.getZoom()
+            const layers = this.map._layers;
+            this.map.eachLayer(layer => {
+                // Check if the layer is a marker
+                if (layer instanceof L.GPX) {
+                    const gpxLayers = layer.getLayers()
+                    const weight = self.getLineWeightByZoom(zoom, self.constant.map.gpx.weight)
+                    gpxLayers[0].setStyle({
+                        weight: weight
+                    });
+                }
+                if (layer instanceof L.Marker) {
+                    const size = self.getMarkerSizeByZoom(zoom, self.constant.map.marker.size)
+                    console.log('self.constant.map.marker.icon', self.constant.map.marker.icon)
+                    const newIcon = L.icon({
+                        iconUrl: self.constant.map.marker.icon,
+                        iconSize: [size, size],
+                    });
+                    layer.setIcon(newIcon);
+                }
+            });
+          }
+        },
+        getMarkerSizeByZoom(zoom, value) {
+            const calc_value = value * Math.pow(2, zoom - 18)
+            return calc_value > 15 ? calc_value : 15
+        },
+        getLineWeightByZoom(zoom, value) {
+            console.log('zoom', zoom)
+            console.log('value', value)
+            const calc_value = value * Math.pow(2, zoom - 18)
+            return calc_value > 5 ? calc_value : 5
+        }
     }
 };

@@ -24,7 +24,12 @@ import { Head, Link } from '@inertiajs/vue3'
         <v-card class="vp_card">
           <v-btn icon="mdi-close" @click="modal = false" class="vp_close"></v-btn>
           <div class="vp_content">
-            <v-img v-if="modal" max-width="1000" contain :src="modal_image_url"></v-img>
+            <v-img 
+              lazy-src="/empty.png"
+              v-if="modal" 
+              max-width="1000" 
+              :src="modal_image_url"
+            ></v-img>
           </div>
         </v-card>
       </v-dialog>
@@ -52,11 +57,6 @@ export default {
   data() {
     return {
       map: null,
-      map_default_option: {
-        view: [0,0],
-        pin: [0,0],
-        scale: 1
-      },
       modal: false,
       modal_type: 1, // video
       modal_video_url: null,
@@ -85,11 +85,21 @@ export default {
   mounted() {
     console.log('thisuser', this.user)
     const self = this
-    const init_pos = this.user.init_lat && this.user.init_long ? 
-      [this.user.init_lat, this.user.init_long] :
-      self.map_default_option.view
-    self.map_default_option = this.constant.map
-    self.map = L.map('map').setView(init_pos,self.map_default_option.zoom);
+    const init_pos = self.user.init_lat && self.user.init_long ? 
+      [self.user.init_lat, self.user.init_long] :
+      self.constant.map.view
+    self.gpxOptions.polyline_options.weight = self.getLineWeightByZoom(
+      self.constant.map.zoom, 
+      self.constant.map.gpx.weight
+    )
+    const iconSize = self.getMarkerSizeByZoom(self.constant.map.zoom, self.constant.map.marker.size)
+    const marker_icon = L.icon({
+      iconUrl: self.constant.map.marker.icon, // Replace with the path to your image
+      iconSize: [iconSize, iconSize], // Set the size of the icon
+    });
+    
+    self.map = L.map('map').setView(init_pos, self.constant.map.zoom)
+      .on('zoomend', self.onZoomChange);
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
     }).addTo(self.map)
@@ -104,9 +114,9 @@ export default {
           });
       } else if(record.type == 2 || record.type == 3) {
         const coordinate = (record.image_lat && record.image_long) ? 
-          [record.image_lat, record.image_long] : this.map_default_option.pin
+          [record.image_lat, record.image_long] : this.constant.map.pin
         
-        const pin_marker = L.marker(coordinate, { draggable: true })
+        const pin_marker = L.marker(coordinate, { icon: marker_icon, draggable: true })
           .addTo(self.map)
           .on('click', function() {
             self.onShowModal(record)
@@ -139,7 +149,7 @@ export default {
         this.modal_image_url = this.get_path_url(record.media_path)
         this.modal = true
       }
-    }
+    },
   },
 };
 </script>

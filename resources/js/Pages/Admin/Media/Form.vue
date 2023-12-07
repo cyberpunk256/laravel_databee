@@ -99,7 +99,7 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
           </Link>
         </v-col>
         <v-col cols="auto">
-          <v-btn @click.stop="onSubmit" color="primary">{{ type == 'new' ? '登録' : '更新' }}</v-btn>
+          <v-btn :disabled="loading" @click.stop="onSubmit" color="primary">{{ type == 'new' ? '登録' : '更新' }}</v-btn>
         </v-col>
       </v-row>
     </template>
@@ -112,6 +112,7 @@ export default {
   props: ['tab', 'type', 'record', 'action'],
   data() {
     return {
+      loading: false,
       form: useForm({
         name: null,
         video: null,
@@ -219,6 +220,7 @@ export default {
     },
     onSubmit() {
       const self = this
+      self.loading = true
       const method = this.type == 'new' ? 'post' : 'put'
       const action = this.type == 'new' ? '/admin/media' : `/admin/media/${this.record.id}`
       this.form.submit(method, action, {
@@ -227,6 +229,7 @@ export default {
         },
         onFinish: () => {
           self.show_toast();
+          self.loading = false
         }
       })
     },

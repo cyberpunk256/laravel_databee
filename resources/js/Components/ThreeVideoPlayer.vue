@@ -32,6 +32,7 @@ export default {
     return {
       viewer: null,
       panorama: null,
+      video: null,
       isPlaying: false,
       progress: 0,
       disabled: false,
@@ -48,6 +49,11 @@ export default {
     } catch(e) {
       console.log(e)
     }
+  },
+  unmounted() {
+    if(self.video) self.video.remove()
+    if(self.panorama) self.panorama.dispose()
+    if(self.viewer) self.viewer.dispose()
   },
   methods: {
     async initVideoPlayer() {
@@ -164,13 +170,6 @@ export default {
       } finally {
         self.is_capturing  =false
       }
-      // const canvas = document.createElement('canvas');
-      // const context = canvas.getContext('2d');
-      // canvas.width = window.innerWidth;
-      // canvas.height = window.innerHeight;
-      // context.drawImage(self.viewer.renderer.domElement, 0, 0, canvas.width, canvas.height);
-      // canvas.toBlob(async function(blob) {
-      // }, "image/jpg");
     }
   },
 };
