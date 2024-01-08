@@ -30,5 +30,17 @@ export default {
       to: '/admin/capture',
       roles: [1]
     },
+    {
+      title: '設定',
+      icon: 'mdi-cog',
+      to: '/admin/setting',
+      roles: [1]
+    },
+    {
+      title: 'アップロード',
+      icon: 'mdi-upload',
+      to: '/admin/upload',
+      roles: [1]
+    },
   ],
 }

@@ -165,6 +165,7 @@ export default {
       }
       this.form.image_lat = data.image_lat
       this.form.image_long = data.image_long
+      console.log('form', this.form)
     },
     onValidate() {
       let errors = {}

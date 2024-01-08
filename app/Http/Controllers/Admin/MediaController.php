@@ -12,6 +12,7 @@ use App\Http\Requests\Admin\MediaUpdateRequest;
 use App\Services\S3Service;
 
 use App\Models\Media;
+use App\Jobs\MediaConvertJob;
 
 class MediaController extends Controller
 {
@@ -105,20 +106,25 @@ class MediaController extends Controller
             ];
 
             if($input['type'] == 1) {
-                $data['media_path'] = date("Ymd") . "/" . $input['video']['file_name'];
+                $data['queue'] = 0; // queue
+                $data['media_path'] = "convert/" . date("Ymd") . "/" . $input['video']['file_full_name'];
                 $data['video_duration'] = $input['video']['video_duration'];
-                $data['gpx_path'] = date("Ymd") . "/" . $input['gpx']['file_name'];
+                $data['gpx_path'] = date("Ymd") . "/" . $input['gpx']['file_full_name'];
                 $this->s3service->move($input['video']['file_path'], $data['media_path']);
                 $this->s3service->move($input['gpx']['file_path'], $data['gpx_path']);
+                $record = Media::create($data);
+                $outputPrefix = date("Ymd") . "/" . $input['video']['file_name'];
+                MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('media-convert');
             } else {
-                $data['media_path'] = date("Ymd") . "/" . $input['image']['file_name'];
+                $data['queue'] = 1; // complete : not meida convert
+                $data['media_path'] = date("Ymd") . "/" . $input['image']['file_full_name'];
                 $this->s3service->move($input['image']['file_path'], $data['media_path']);
+                Media::create($data);
             }
 
             Media::create($data);
 
-            return back()->with(['success' => __("success_save")]);
-
+            return redirect()->route('admin.media.index')->with(['success' => __("success_save")]);
         } catch (\Throwable $exception) {
             \Log::error($exception);
             return back()->with(['error' => __("success_error")], 404);
@@ -160,15 +166,17 @@ class MediaController extends Controller
             $delete_files = [];
             if($input['type'] == 1) {
                 if(isset($input['video'])) {
-                    $data['media_path'] = date("Ymd") . "/" . $input['video']['file_name'];
+                    $data['media_path'] = "convert/" . date("Ymd") . "/" . $input['video']['file_full_name'];
                     $data['video_duration'] = $input['video']['video_duration'];
                     $this->s3service->move($input['video']['file_path'], $data['media_path']);
                     if($record->media_path) {
                         $delete_files[] = [ 'Key' => $record->media_path ];
                     }
+                    $outputPrefix = date("Ymd") . "/" . $input['video']['file_name'];
+                    MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('media-convert');
                 }
                 if(isset($input['gpx'])) {
-                    $data['gpx_path'] = date("Ymd") . "/" . $input['gpx']['file_name'];
+                    $data['gpx_path'] = date("Ymd") . "/" . $input['gpx']['file_full_name'];
                     $this->s3service->move($input['gpx']['file_path'], $data['gpx_path']);
                     if($record->gpx_path) {
                         $delete_files[] = [ 'Key' => $record->gpx_path ];
@@ -176,7 +184,7 @@ class MediaController extends Controller
                 }
             } else {
                 if(isset($input['image'])) {
-                    $data['media_path'] = date("Ymd") . "/" . $input['image']['file_name'];
+                    $data['media_path'] = date("Ymd") . "/" . $input['image']['file_full_name'];
                     $this->s3service->move($input['image']['file_path'], $data['media_path']);
                     if($record->media_path) {
                         $delete_files[] = [ 'Key' => $record->media_path ];
@@ -188,7 +196,7 @@ class MediaController extends Controller
             $this->s3service->deleteFiles($delete_files);
 
             \DB::commit();
-            return back()->with(['success' => __("success_save")]);
+            return redirect()->route('admin.media.index')->with(['success' => __("success_update")]);
         } catch (\Throwable $exception) {
             \DB::rollBack();
             \Log::error($exception);
@@ -252,14 +260,16 @@ class MediaController extends Controller
     {
         try {
             $file_extension = $request->input('extension');
-            $file_name = Str::uuid() . "." . $file_extension;
-            $file_path = "tmp/" . $file_name;
+            $file_name = time().'_'.mt_rand(100, 999);
+            $file_full_name = $file_name . "." . $file_extension;
+            $file_path = "tmp/" . $file_full_name;
             
             $presignedUrl = $this->s3service->createPresignedUrl($file_path);
             return response()->json([
                 "success" => __("success_complete"),
                 'presigned_url' => $presignedUrl,
                 'file_path' => $file_path,
+                'file_full_name' => $file_full_name,
                 'file_name' => $file_name
             ]);
         } catch (\Throwable $exception) {

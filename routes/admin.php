@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\CaptureController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\UploadController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -45,4 +47,8 @@ Route::middleware('auth.admin:1')->group(function () {
     Route::resource('user', UserController::class)->except(['show']);
     Route::resource('group', GroupController::class)->except(['show']);
     Route::resource('capture', CaptureController::class)->except(['show','create','update']);
+    Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
+    Route::post('setting', [SettingController::class, 'update'])->name('setting.update');
+    Route::get('upload', [UploadController::class, 'index'])->name('upload.index');
+    Route::post('upload', [UploadController::class, 'store'])->name('upload.store');
 });
