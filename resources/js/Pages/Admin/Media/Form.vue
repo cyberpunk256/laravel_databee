@@ -4,105 +4,98 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
 </script>
 
 <template>
-  <v-card>
-    <template v-if="tab == 'form'">
-      <v-card-text>
-        <v-text-field v-model="form.name" label="メディア名" variant="underlined" :error-messages="form.errors.name" />
-        <v-select
-          :items="constant.enums.media_types"
-          :error-messages="form.errors.type"
-          @change="onTypeChange"
-          v-model="form.type"
-          item-title="text"
-          item-value="value"
-          label="メディア種別"
-          variant="underlined"
-          class="mt-4"
+  <v-card :class="[tab == 'form' ? 'd-block' : 'd-none']">
+    <v-card-text>
+      <v-text-field v-model="form.name" label="メディア名" variant="underlined" :error-messages="form.errors.name" />
+      <v-select
+        v-model="form.type"
+        :items="constant.enums.media_types"
+        :error-messages="form.errors.type"
+        item-title="text"
+        item-value="value"
+        label="メディア種別"
+        variant="underlined"
+        class="mt-4"
+        @change="onTypeChange"
+      />
+      <template v-if="form.type == 1">
+        <S3FileUpload
+          :origin="form.origin_video_path"
+          :error="form.errors.video"
+          type="video"
+          label="メディアファイルをアップロードしてください。"
+          class="mt-2"
+          @success="(value) => onFileUploaded('video', value)"
+          @remove="onFileUploaded('video', null)"
+          @removeOrign="onRemoveOrigin('origin_video_path')"
+          @status="(value) => onUploadStatus('video', value)"
         />
-        <template v-if="form.type == 1">
-          <S3FileUpload
-            :origin="form.origin_video_path"
-            :error="form.errors.video"
-            type="video"
-            @success="value => onFileUploaded('video', value)"
-            @remove="onFileUploaded('video', null)"
-            @removeOrign="onRemoveOrigin('origin_video_path')"
-            @status="value => onUploadStatus('video', value)"
-            label="メディアファイルをアップロードしてください。"
-            class="mt-2"
-          />
-          <S3FileUpload
-            :origin="form.origin_gpx_path"
-            :error="form.errors.gpx"
-            type="gpx"
-            @success="value => onFileUploaded('gpx', value)"
-            @remove="onFileUploaded('gpx', null)"
-            @removeOrign="onRemoveOrigin('origin_gpx_path')"
-            @status="value => onUploadStatus('gpx', value)"
-            label="GPXファイルをアップロードしてください。"
-            class="mt-2"
-          />
-        </template>
-        <template v-if="form.type == 2">
-          <S3FileUpload
-            :origin="form.origin_image_path"
-            :error="form.errors.image"
-            type="image"
-            @success="value => onFileUploaded('image', value)"
-            @remove="onFileUploaded('image', null)"
-            @removeOrign="onRemoveOrigin('origin_image_path')"
-            @status="value => onUploadStatus('image', value)"
-            label="メディアファイルをアップロードしてください。"
-            class="mt-2"
-          />
-        </template>
-        <template v-if="form.type == 3">
-          <S3FileUpload
-            :origin="form.origin_image_path"
-            :error="form.errors.panorama"
-            type="panorama"
-            @success="value => onFileUploaded('image', value)"
-            @remove="onFileUploaded('image', null)"
-            @removeOrign="onRemoveOrigin('origin_image_path')"
-            @status="value => onUploadStatus('image', value)"
-            label="メディアファイルをアップロードしてください。"
-            class="mt-2"
-          />
-        </template>
-        <template v-if="form.type == 2 || form.type == 3">
-          <v-text-field v-model="form.image_lat" label="経度" variant="underlined" />
-          <v-text-field v-model="form.image_long" label="緯度" variant="underlined"/>
-        </template>
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-row class="py-4" justify="center">
-        <v-col cols="auto">
-          <Link href="/admin/media" as="div">
-            <v-btn text>キャンセル</v-btn>
-          </Link>
-        </v-col>
-        <v-col cols="auto">
-          <v-btn :disabled="computedPreviewStatus" @click.stop="onPreview" color="primary">プレビュー</v-btn>
-        </v-col>
-      </v-row>
-    </template>
-    <template v-else>
-      <Map 
-        :record="computedRecord"
-        @update="onUpdateLatLng"
-      ></Map>
-      <v-divider></v-divider>
-      <v-row class="py-4" justify="center">
-        <v-col cols="auto">
-          <Link href="/admin/media" as="div">
-            <v-btn text>キャンセル</v-btn>
-          </Link>
-        </v-col>
-        <v-col cols="auto">
-          <v-btn :disabled="loading" @click.stop="onSubmit" color="primary">{{ type == 'new' ? '登録' : '更新' }}</v-btn>
-        </v-col>
-      </v-row>
-    </template>
+        <S3FileUpload
+          :origin="form.origin_gpx_path"
+          :error="form.errors.gpx"
+          type="gpx"
+          label="GPXファイルをアップロードしてください。"
+          class="mt-2"
+          @success="(value) => onFileUploaded('gpx', value)"
+          @remove="onFileUploaded('gpx', null)"
+          @removeOrign="onRemoveOrigin('origin_gpx_path')"
+          @status="(value) => onUploadStatus('gpx', value)"
+        />
+      </template>
+      <template v-if="form.type == 2">
+        <S3FileUpload
+          :origin="form.origin_image_path"
+          :error="form.errors.image"
+          type="image"
+          label="メディアファイルをアップロードしてください。"
+          class="mt-2"
+          @success="(value) => onFileUploaded('image', value)"
+          @remove="onFileUploaded('image', null)"
+          @removeOrign="onRemoveOrigin('origin_image_path')"
+          @status="(value) => onUploadStatus('image', value)"
+        />
+      </template>
+      <template v-if="form.type == 3">
+        <S3FileUpload
+          :origin="form.origin_image_path"
+          :error="form.errors.panorama"
+          type="panorama"
+          label="メディアファイルをアップロードしてください。"
+          class="mt-2"
+          @success="(value) => onFileUploaded('image', value)"
+          @remove="onFileUploaded('image', null)"
+          @removeOrign="onRemoveOrigin('origin_image_path')"
+          @status="(value) => onUploadStatus('image', value)"
+        />
+      </template>
+      <template v-if="form.type == 2 || form.type == 3">
+        <v-text-field v-model="form.image_lat" label="経度" variant="underlined" />
+        <v-text-field v-model="form.image_long" label="緯度" variant="underlined" />
+      </template>
+    </v-card-text>
+    <v-divider></v-divider>
+    <v-row class="py-4" justify="center">
+      <v-col cols="auto">
+        <Link href="/admin/media" as="div">
+          <v-btn text>キャンセル</v-btn>
+        </Link>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn :disabled="computedPreviewStatus" color="primary" @click.stop="onPreview">プレビュー</v-btn>
+      </v-col>
+    </v-row>
+  </v-card>
+  <v-card :class="[tab == 'form' ? 'd-none' : 'd-block']">
+    <Map v-if="computedRecord" :record="computedRecord" @update="onUpdateLatLng"></Map>
+    <v-divider></v-divider>
+    <v-row class="py-4" justify="center">
+      <v-col cols="auto">
+        <v-btn text @click="onBack">戻る</v-btn>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn :disabled="loading" color="primary" @click.stop="onSubmit">{{ type == 'new' ? '登録' : '更新' }}</v-btn>
+      </v-col>
+    </v-row>
   </v-card>
 </template>
 
@@ -131,11 +124,45 @@ export default {
         video: false,
         image: false,
         gpx: false,
-      }
+      },
     }
   },
+  computed: {
+    computedPreviewStatus() {
+      if (this.upload_status.video || this.upload_status.image || this.upload_status.gpx || this.upload_status.submit) {
+        return true
+      } else {
+        return false
+      }
+    },
+    computedRecord() {
+      try {
+        if (this.form.type == 1) {
+          // video
+          const video_path = this.form.origin_video_path ? this.form.origin_video_path : this.form.video.file_path
+          const gpx_path = this.form.origin_gpx_path ? this.form.origin_gpx_path : this.form.gpx.file_path
+          return {
+            type: this.form.type,
+            video_path: video_path,
+            gpx_path: gpx_path,
+          }
+        } else {
+          const image_path = this.form.origin_image_path ? this.form.origin_image_path : this.form.image.file_path
+          return {
+            type: this.form.type,
+            image_path: image_path,
+            image_lat: this.form.image_lat,
+            image_long: this.form.image_long,
+          }
+        }
+      } catch (e) {
+        console.log(e)
+        return false
+      }
+    },
+  },
   mounted() {
-    if(this.record) {
+    if (this.record) {
       this.form = useForm({
         name: this.record.name,
         video: null,
@@ -148,7 +175,8 @@ export default {
         origin_image_path: null,
         origin_gpx_path: null,
       })
-      if(this.record.type == 1) { // video 
+      if (this.record.type == 1) {
+        // video
         this.form.origin_video_path = this.record.media_path
         this.form.origin_gpx_path = this.record.gpx_path
       } else {
@@ -161,6 +189,7 @@ export default {
       this.form[field] = {
         file_path: data.file_path,
         file_name: data.file_name,
+        file_full_name: data.file_full_name,
         video_duration: data.video_duration,
       }
       this.form.image_lat = data.image_lat
@@ -197,13 +226,16 @@ export default {
     onUploadStatus(field, value) {
       this.upload_status = {
         ...this.upload_status,
-        [field]: value
+        [field]: value,
       }
     },
     onPreview() {
       if (this.onValidate()) {
-        this.$emit('preview');
+        this.$emit('preview')
       }
+    },
+    onBack() {
+      this.$emit('back')
     },
     onRemoveOrigin(field) {
       this.form[field] = null
@@ -225,42 +257,11 @@ export default {
       const method = this.type == 'new' ? 'post' : 'put'
       const action = this.type == 'new' ? '/admin/media' : `/admin/media/${this.record.id}`
       this.form.submit(method, action, {
-        onSuccess: () => {
-          router.visit('/admin/media')
-        },
         onFinish: () => {
-          self.show_toast();
+          self.show_toast()
           self.loading = false
-        }
+        },
       })
-    },
-  },
-  computed: {
-    computedPreviewStatus() {
-      if(this.upload_status.video || this.upload_status.image || this.upload_status.gpx || this.upload_status.submit) {
-        return true;
-      } else {
-        return false;
-      }
-    },
-    computedRecord() {
-      if(this.form.type == 1) { // video
-        const video_path = this.form.origin_video_path ? this.form.origin_video_path : this.form.video.file_path
-        const gpx_path = this.form.origin_gpx_path ? this.form.origin_gpx_path : this.form.gpx.file_path
-        return {
-          type: this.form.type,
-          video_path: video_path,
-          gpx_path: gpx_path,
-        }
-      } else {
-        const image_path = this.form.origin_image_path ? this.form.origin_image_path : this.form.image.file_path
-        return {
-          type: this.form.type,
-          image_path: image_path,
-          image_lat: this.form.image_lat,
-          image_long: this.form.image_long,
-        }
-      }
     },
   },
 }

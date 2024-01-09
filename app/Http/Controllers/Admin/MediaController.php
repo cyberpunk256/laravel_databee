@@ -107,17 +107,17 @@ class MediaController extends Controller
 
             if($input['type'] == 1) {
                 $data['queue'] = 0; // queue
-                $data['media_path'] = "convert/" . date("Ymd") . "/" . $input['video']['file_full_name'];
+                $data['media_path'] = "convert/" . $input['video']['file_full_name'];
                 $data['video_duration'] = $input['video']['video_duration'];
-                $data['gpx_path'] = date("Ymd") . "/" . $input['gpx']['file_full_name'];
+                $data['gpx_path'] = "main/" . $input['gpx']['file_full_name'];
                 $this->s3service->move($input['video']['file_path'], $data['media_path']);
                 $this->s3service->move($input['gpx']['file_path'], $data['gpx_path']);
                 $record = Media::create($data);
-                $outputPrefix = date("Ymd") . "/" . $input['video']['file_name'];
-                MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('media-convert');
+                $outputPrefix = "main/" . $input['video']['file_name'];
+                MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('default');
             } else {
                 $data['queue'] = 1; // complete : not meida convert
-                $data['media_path'] = date("Ymd") . "/" . $input['image']['file_full_name'];
+                $data['media_path'] = "main/" . $input['image']['file_full_name'];
                 $this->s3service->move($input['image']['file_path'], $data['media_path']);
                 Media::create($data);
             }
@@ -166,17 +166,17 @@ class MediaController extends Controller
             $delete_files = [];
             if($input['type'] == 1) {
                 if(isset($input['video'])) {
-                    $data['media_path'] = "convert/" . date("Ymd") . "/" . $input['video']['file_full_name'];
+                    $data['media_path'] = "convert/" . $input['video']['file_full_name'];
                     $data['video_duration'] = $input['video']['video_duration'];
                     $this->s3service->move($input['video']['file_path'], $data['media_path']);
                     if($record->media_path) {
                         $delete_files[] = [ 'Key' => $record->media_path ];
                     }
-                    $outputPrefix = date("Ymd") . "/" . $input['video']['file_name'];
-                    MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('media-convert');
+                    $outputPrefix = "main/" . $input['video']['file_name'];
+                    MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('default');
                 }
                 if(isset($input['gpx'])) {
-                    $data['gpx_path'] = date("Ymd") . "/" . $input['gpx']['file_full_name'];
+                    $data['gpx_path'] = "main/" . $input['gpx']['file_full_name'];
                     $this->s3service->move($input['gpx']['file_path'], $data['gpx_path']);
                     if($record->gpx_path) {
                         $delete_files[] = [ 'Key' => $record->gpx_path ];
@@ -184,7 +184,7 @@ class MediaController extends Controller
                 }
             } else {
                 if(isset($input['image'])) {
-                    $data['media_path'] = date("Ymd") . "/" . $input['image']['file_full_name'];
+                    $data['media_path'] = "main/" . $input['image']['file_full_name'];
                     $this->s3service->move($input['image']['file_path'], $data['media_path']);
                     if($record->media_path) {
                         $delete_files[] = [ 'Key' => $record->media_path ];
@@ -260,7 +260,7 @@ class MediaController extends Controller
     {
         try {
             $file_extension = $request->input('extension');
-            $file_name = time().'_'.mt_rand(100, 999);
+            $file_name = date('Ymd') . '/'. date('Hisu') . mt_rand(100, 999);
             $file_full_name = $file_name . "." . $file_extension;
             $file_path = "tmp/" . $file_full_name;
             

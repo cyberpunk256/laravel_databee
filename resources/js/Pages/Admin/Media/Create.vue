@@ -31,7 +31,7 @@ const breadcrumbs = ref([
       </v-col>
       <v-spacer></v-spacer>
       <v-col cols="auto">
-        <v-btn v-if="tab == 'map'" icon="mdi-arrow-left" @click="tab = 'form'"></v-btn>
+        <v-btn v-if="tab == 'map'" icon="mdi-arrow-left" @click="onBack"></v-btn>
       </v-col>
     </v-row>
     <Form 
@@ -40,6 +40,7 @@ const breadcrumbs = ref([
       :method="method"
       :data="null"
       :action="action"
+      @back="onBack"
       @preview="onChangeTab"
       ></Form>
   </AdminLayout>
@@ -60,6 +61,9 @@ export default {
   methods: {
     onChangeTab() {
       this.tab = 'map'
+    },
+    onBack() {
+      this.tab = 'form'
     }
   }
 }
