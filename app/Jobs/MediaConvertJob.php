@@ -35,39 +35,38 @@ class MediaConvertJob implements ShouldQueue
   public function handle(MediaConvertClient $mediaConvertClient): void
   {
     try {
-        $jobSetting = $this->getMediaConvertSetting($this->media->media_path, $this->outputPrefix);
-        dd($jobSetting);
-        $arnId = config('app.arn_id');
-        $region = config('app.region');
-        
-        $result = $mediaConvertClient->createJob([
-            "Role" => "arn:aws:iam::{$arnId}:role/service-role/MediaConvert_Default_Role",
-            "Settings" => $jobSetting,
-            "Queue" => "arn:aws:mediaconvert:{$region}:{$arnId}:queues/Default",
-            "UserMetadata" => [],
-        ]);
+      $jobSetting = $this->getMediaConvertSetting($this->media->media_path, $this->outputPrefix);
+      $arnId = config('filesystems.disks.s3.arn_id');
+      $region = config('filesystems.disks.s3.region');
+      
+      $result = $mediaConvertClient->createJob([
+          "Role" => "arn:aws:iam::{$arnId}:role/service-role/MediaConvert_Default_Role",
+          "Settings" => $jobSetting,
+          "Queue" => "arn:aws:mediaconvert:{$region}:{$arnId}:queues/Default",
+          "UserMetadata" => [],
+      ]);
 
-        $jobId = $result['Job']['Id'];
+      $jobId = $result['Job']['Id'];
 
-        // ジョブが完了するまでポーリング
-        do {
-            $job = $mediaConvertClient->getJob(['Id' => $jobId]);
-            $jobStatus = $job['Job']['Status'];
+      // ジョブが完了するまでポーリング
+      do {
+          $job = $mediaConvertClient->getJob(['Id' => $jobId]);
+          $jobStatus = $job['Job']['Status'];
 
-            if ($jobStatus === 'COMPLETE') {
-                $this->media->update([
-                    'queue' => 1, // complete
-                    'media_path' => $this->outputPrefix . "/index.m3u8",
-                ]);
+          if ($jobStatus === 'COMPLETE') {
+              $this->media->update([
+                  'queue' => 1, // complete
+                  'media_path' => $this->outputPrefix . "/index.m3u8",
+              ]);
 
-                \Log::info('MediaConvertJob Status - COMPLETE - ', $job['Job']);
-            } elseif ($jobStatus === 'ERROR') {
-                \Log::error('MediaConvertJob Status - ERROR');
-            }
+              \Log::info('MediaConvertJob Status - COMPLETE - ', $job['Job']);
+          } elseif ($jobStatus === 'ERROR') {
+              \Log::error('MediaConvertJob Status - ERROR');
+          }
 
-            sleep(10); // 5秒ごとにポーリング
+          sleep(10); // 5秒ごとにポーリング
 
-        } while ($jobStatus !== 'COMPLETE');
+      } while ($jobStatus !== 'COMPLETE');
     } catch (AwsException $e) {
         \Log::error($e);
     }
@@ -113,9 +112,9 @@ class MediaConvertJob implements ShouldQueue
     $db_setting_str = Setting::where('key', 'media_conver_options')->first();
     $db_setting = json_decode($db_setting_str->value);
     foreach($db_setting as $detail) {
-      $resolution = $detail['resolution'];
-      $bitrate = $detail['bitrate'];
-      $mc_setting['OutputGroups']['Outputs'][] = [
+      $resolution = $detail->resolution;
+      $bitrate = $detail->bitrate;
+      $mc_setting['OutputGroups'][0]['Outputs'][] = [
         "ContainerSettings" =>  [
           "Container" =>  "M3U8",
           "M3u8Settings" =>  []

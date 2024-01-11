@@ -9,17 +9,17 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\MediaUpdateRequest;
-use App\Services\S3Service;
+use App\Services\AWSService;
 
 use App\Models\Media;
 use App\Jobs\MediaConvertJob;
 
 class MediaController extends Controller
 {
-    protected S3Service $s3service;
+    protected AWSService $aws_service;
     public function __construct()
     {
-        $this->s3service = new S3Service();
+        $this->aws_service = new AWSService();
     }
 
     public function index(Request $request)
@@ -110,15 +110,15 @@ class MediaController extends Controller
                 $data['media_path'] = "convert/" . $input['video']['file_full_name'];
                 $data['video_duration'] = $input['video']['video_duration'];
                 $data['gpx_path'] = "main/" . $input['gpx']['file_full_name'];
-                $this->s3service->move($input['video']['file_path'], $data['media_path']);
-                $this->s3service->move($input['gpx']['file_path'], $data['gpx_path']);
+                $this->aws_service->move($input['video']['file_path'], $data['media_path']);
+                $this->aws_service->move($input['gpx']['file_path'], $data['gpx_path']);
                 $record = Media::create($data);
                 $outputPrefix = "main/" . $input['video']['file_name'];
                 MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('default');
             } else {
                 $data['queue'] = 1; // complete : not meida convert
                 $data['media_path'] = "main/" . $input['image']['file_full_name'];
-                $this->s3service->move($input['image']['file_path'], $data['media_path']);
+                $this->aws_service->move($input['image']['file_path'], $data['media_path']);
                 Media::create($data);
             }
 
@@ -168,7 +168,7 @@ class MediaController extends Controller
                 if(isset($input['video'])) {
                     $data['media_path'] = "convert/" . $input['video']['file_full_name'];
                     $data['video_duration'] = $input['video']['video_duration'];
-                    $this->s3service->move($input['video']['file_path'], $data['media_path']);
+                    $this->aws_service->move($input['video']['file_path'], $data['media_path']);
                     if($record->media_path) {
                         $delete_files[] = [ 'Key' => $record->media_path ];
                     }
@@ -177,7 +177,7 @@ class MediaController extends Controller
                 }
                 if(isset($input['gpx'])) {
                     $data['gpx_path'] = "main/" . $input['gpx']['file_full_name'];
-                    $this->s3service->move($input['gpx']['file_path'], $data['gpx_path']);
+                    $this->aws_service->move($input['gpx']['file_path'], $data['gpx_path']);
                     if($record->gpx_path) {
                         $delete_files[] = [ 'Key' => $record->gpx_path ];
                     }
@@ -185,7 +185,7 @@ class MediaController extends Controller
             } else {
                 if(isset($input['image'])) {
                     $data['media_path'] = "main/" . $input['image']['file_full_name'];
-                    $this->s3service->move($input['image']['file_path'], $data['media_path']);
+                    $this->aws_service->move($input['image']['file_path'], $data['media_path']);
                     if($record->media_path) {
                         $delete_files[] = [ 'Key' => $record->media_path ];
                     }
@@ -193,7 +193,7 @@ class MediaController extends Controller
             }
 
             $record->update($data);
-            $this->s3service->deleteFiles($delete_files);
+            $this->aws_service->deleteFiles($delete_files);
 
             \DB::commit();
             return redirect()->route('admin.media.index')->with(['success' => __("success_update")]);
@@ -226,7 +226,7 @@ class MediaController extends Controller
             }
             
             (clone $records_query)->forceDelete();
-            $result = $this->s3service->deleteFiles($delete_files);
+            $result = $this->aws_service->deleteFiles($delete_files);
 
             \DB::commit();
             return back()->with(['success' => __("success_delete")]);
@@ -264,7 +264,7 @@ class MediaController extends Controller
             $file_full_name = $file_name . "." . $file_extension;
             $file_path = "tmp/" . $file_full_name;
             
-            $presignedUrl = $this->s3service->createPresignedUrl($file_path);
+            $presignedUrl = $this->aws_service->createPresignedUrl($file_path);
             return response()->json([
                 "success" => __("success_complete"),
                 'presigned_url' => $presignedUrl,

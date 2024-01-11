@@ -5,16 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
-use App\Services\S3Service;
+use App\Services\AWSService;
 
 use App\Models\Media;
 
 class IndexController extends Controller
 {
-    protected S3Service $s3service;
+    protected AWSService $aws_service;
     public function __construct()
     {
-        $this->s3service = new S3Service();
+        $this->aws_service = new AWSService();
     }
 
     public function index(Request $request)

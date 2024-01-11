@@ -64,8 +64,8 @@ export default {
   async mounted() {
     console.log('xxx')
     try {
-      // this.video_url = await this.get_video_url(this.url)
-      this.video_url = 'https://3d-videos-new.s3.ap-northeast-1.amazonaws.com/tmp/test04/video.m3u8'
+      this.video_url = await this.get_video_url(this.url)
+      // this.video_url = 'https://3d-videos-new.s3.ap-northeast-1.amazonaws.com/tmp/test04/video.m3u8'
       this.initVideoPlayer()
     } catch (e) {
       console.log(e)
@@ -102,7 +102,7 @@ export default {
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
           self.qualities = [{ value: -1, text: '自動' }]
           hls.levels.forEach(function (level, index) {
-            self.qualities.push({ value: index, text: level.width + 'px' })
+            self.qualities.push({ value: index, text: level.height + 'p' })
             console.log('self.qualities', self.qualities)
           })
         })

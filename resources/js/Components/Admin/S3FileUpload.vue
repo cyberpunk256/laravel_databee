@@ -64,6 +64,7 @@ export default {
       required: true,
     },
     label: String,
+    dir: String,
     error: String,
     origin: String,
   },

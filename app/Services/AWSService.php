@@ -8,11 +8,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Aws\S3\S3Client;
+use Aws\CloudFront\CloudFrontClient;
 use Illuminate\Filesystem\FilesystemAdapter;
 
-class S3Service
+class AWSService
 {
     protected S3Client $s3client;
+    protected CloudFrontClient $cf_client;
     public function __construct()
     {
         if(config('app.env') == 'production') {
@@ -20,8 +22,20 @@ class S3Service
                 'region' => config('filesystems.disks.s3.region'), // S3のリージョン
                 'version' => 'latest'
             ]);
+            $this->cf_client = new CloudFrontClient([
+                'region' => config('filesystems.disks.s3.region'), // S3のリージョン
+                'version' => 'latest'
+            ]);
         } else {
             $this->s3client = new S3Client([
+                'region' => config('filesystems.disks.s3.region'), // S3のリージョン
+                'version' => 'latest',
+                'credentials' => [
+                    'key' => config('filesystems.disks.s3.key'),
+                    'secret' => config('filesystems.disks.s3.secret')
+                ],
+            ]);
+            $this->cf_client = new CloudFrontClient([
                 'region' => config('filesystems.disks.s3.region'), // S3のリージョン
                 'version' => 'latest',
                 'credentials' => [
@@ -49,16 +63,15 @@ class S3Service
 
     public function getPresignedUrl(String $path)
     {
-        $cmd = $this->s3client->getCommand('GetObject', [
-            'Bucket' => config('filesystems.disks.s3.bucket'),
-            'Key' => $path
-        ]);
+        $resourceUrl = 'https://' . config('filesystems.disks.s3.cloudfront_domain') . '/' . $path;
+        // $signedUrl = $this->cf_client->getSignedUrl([
+        //     'url' => $resourceUrl,
+        //     'expires' => time() + 60 * 30, // URL valid for 60 seconds (adjust as needed)
+        //     'key_pair_id' => config('filesystems.disks.s3.cloudfront_key_pair_id'),
+        //     'private_key' => storage_path(config('filesystems.disks.s3.cloudfront_private_key_path'))
+        // ]);
 
-        $presignedUrl = $this->s3client
-            ->createPresignedRequest($cmd, '+30 minutes')
-            ->getUri();
-
-        return $presignedUrl;
+        return $resourceUrl;
     }
 
     public function upload($file, $path) 
@@ -91,17 +104,21 @@ class S3Service
     public function deleteFiles($files) {
         // 元のファイルを削除
         foreach ($files as $file) {
-            $this->s3client->deleteObject([
-                'Bucket' => config('filesystems.disks.s3.bucket'),
-                'Key' => $file['Key'],
-            ]);
+            if(str_ends_with($file['Key'], 'm3u8')) {
+                //  remove suffix "index.m3u8" from string
+                $folder_path = substr($file['Key'], 0, -11);
+                $this->s3client->deleteMatchingObjects(config('filesystems.disks.s3.bucket'), $folder_path);
+                $this->s3client->deleteObject([
+                    'Bucket' => config('filesystems.disks.s3.bucket'),
+                    'Key' => $folder_path . "/",
+                ]);
+            } else {
+                $this->s3client->deleteObject([
+                    'Bucket' => config('filesystems.disks.s3.bucket'),
+                    'Key' => $file['Key'],
+                ]);
+            }
         }
-        // return $this->s3client->deleteObjects([
-        //     'Bucket' => config('filesystems.disks.s3.bucket'),
-        //     'Delete' => [
-        //         'Objects' => $files,
-        //     ],
-        // ]);
     }
 
     public function getList()

@@ -37,6 +37,7 @@ const breadcrumbs = ref([
     <Form 
       type="new"
       :tab="tab"
+      :dir="dir"
       :method="method"
       :data="null"
       :action="action"
@@ -49,6 +50,7 @@ const breadcrumbs = ref([
 <script>
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 export default {
+  props: ['dir'],
   data() {
     return {
       tab: 'form',

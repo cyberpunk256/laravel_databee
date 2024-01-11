@@ -101,7 +101,7 @@ export default {
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
           self.qualities = [{ value: -1, text: '自動' }]
           hls.levels.forEach(function (level, index) {
-            self.qualities.push({ value: index, text: level.width + 'px' })
+            self.qualities.push({ value: index, text: level.height + 'p' })
             console.log('self.qualities', self.qualities)
           })
         })

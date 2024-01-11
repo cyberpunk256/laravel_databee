@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Aws\MediaConvert\MediaConvertClient;
 
+use App\Models\Setting;
+use App\Models\Media;
+
+use App\Jobs\MediaConvertJob;
+
 class UploadController extends Controller
 {
     protected MediaConvertClient $mediaConvertClient;
@@ -16,6 +21,9 @@ class UploadController extends Controller
     }
     public function index()
     {
+        $record = Media::find(27);
+        $outputPrefix = "main/20240109/122922000000527";
+        MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('default');
         // $queue = $this->mediaConvertClient->getQueue([
         //     'Name' => 'Default',
         // ]);

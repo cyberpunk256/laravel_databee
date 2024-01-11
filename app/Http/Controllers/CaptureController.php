@@ -7,15 +7,15 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 use App\Http\Requests\CaptureUpdateRequest;
-use App\Services\S3Service;
+use App\Services\AWSService;
 use App\Models\Capture;
 
 class CaptureController extends Controller
 {
-    protected S3Service $s3service;
+    protected AWSService $aws_service;
     public function __construct()
     {
-        $this->s3service = new S3Service();
+        $this->aws_service = new AWSService();
     }
 
     public function index(Request $request)
@@ -52,7 +52,7 @@ class CaptureController extends Controller
             }
 
             (clone $records_query)->delete();
-            $result = $this->s3service->deleteFiles($delete_files);
+            $result = $this->aws_service->deleteFiles($delete_files);
 
             \DB::commit();
             return response()->json(['success' => __("success_delete")]);
@@ -79,7 +79,7 @@ class CaptureController extends Controller
                 "long" => $request->input('long'),
                 "url" => date("Ymd") . "/" . Str::uuid() . "." . $file->getClientOriginalExtension()
             ];
-            $this->s3service->upload($file, $attrs['url']);
+            $this->aws_service->upload($file, $attrs['url']);
 
             Capture::create($attrs);
             
