@@ -12,6 +12,7 @@ use App\Http\Requests\Admin\MediaUpdateRequest;
 use App\Services\AWSService;
 
 use App\Models\Media;
+use App\Models\Setting;
 use App\Jobs\MediaConvertJob;
 
 class MediaController extends Controller
@@ -79,7 +80,7 @@ class MediaController extends Controller
             return back()->with(['success' => __("success_update")]);
         } catch (\Throwable $exception) {
             \Log::error($exception);
-            return back()->with(['error' => __("success_error")], 404);
+            return back()->with("error", __('success_error'));
         }
     }
 
@@ -95,6 +96,7 @@ class MediaController extends Controller
                 'type',
                 'image_lat',
                 'image_long',
+                'encoding'
             ]);
 
             $data = [
@@ -106,15 +108,23 @@ class MediaController extends Controller
             ];
 
             if($input['type'] == 1) {
-                $data['queue'] = 0; // queue
-                $data['media_path'] = "convert/" . $input['video']['file_full_name'];
-                $data['video_duration'] = $input['video']['video_duration'];
-                $data['gpx_path'] = "main/" . $input['gpx']['file_full_name'];
-                $this->aws_service->move($input['video']['file_path'], $data['media_path']);
-                $this->aws_service->move($input['gpx']['file_path'], $data['gpx_path']);
-                $record = Media::create($data);
-                $outputPrefix = "main/" . $input['video']['file_name'];
-                MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('default');
+                if($input['encoding'] == 1) { // encoding
+                    $data['media_path'] = "convert/" . $input['video']['file_full_name'];
+                    $data['video_duration'] = $input['video']['video_duration'];
+                    $data['gpx_path'] = "main/" . $input['gpx']['file_full_name'];
+                    $this->aws_service->move($input['video']['file_path'], $data['media_path']);
+                    $this->aws_service->move($input['gpx']['file_path'], $data['gpx_path']);
+                    $record = Media::create($data);
+                    $outputPrefix = "main/" . $input['video']['file_name'];
+                    MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('default');
+                } else {
+                    $data['media_path'] = "main/" . $input['video']['file_full_name'];
+                    $data['video_duration'] = $input['video']['video_duration'];
+                    $data['gpx_path'] = "main/" . $input['gpx']['file_full_name'];
+                    $this->aws_service->move($input['video']['file_path'], $data['media_path']);
+                    $this->aws_service->move($input['gpx']['file_path'], $data['gpx_path']);
+                    $record = Media::create($data);
+                }
             } else {
                 $data['queue'] = 1; // complete : not meida convert
                 $data['media_path'] = "main/" . $input['image']['file_full_name'];
@@ -122,12 +132,10 @@ class MediaController extends Controller
                 Media::create($data);
             }
 
-            Media::create($data);
-
             return redirect()->route('admin.media.index')->with(['success' => __("success_save")]);
         } catch (\Throwable $exception) {
             \Log::error($exception);
-            return back()->with(['error' => __("success_error")], 404);
+            return back()->with("error", __('success_error'));
         }
     }
 
@@ -153,6 +161,7 @@ class MediaController extends Controller
                 'type',
                 'image_lat',
                 'image_long',
+                'encoding'
             ]);
 
             $data = [
@@ -166,14 +175,24 @@ class MediaController extends Controller
             $delete_files = [];
             if($input['type'] == 1) {
                 if(isset($input['video'])) {
-                    $data['media_path'] = "convert/" . $input['video']['file_full_name'];
-                    $data['video_duration'] = $input['video']['video_duration'];
-                    $this->aws_service->move($input['video']['file_path'], $data['media_path']);
-                    if($record->media_path) {
-                        $delete_files[] = [ 'Key' => $record->media_path ];
+                    if($input['encoding'] == 1) { // encoding
+                        $data['media_path'] = "convert/" . $input['video']['file_full_name'];
+                        $data['video_duration'] = $input['video']['video_duration'];
+                        $this->aws_service->move($input['video']['file_path'], $data['media_path']);
+                        if($record->media_path) {
+                            $delete_files[] = [ 'Key' => $record->media_path ];
+                        }
+                        $outputPrefix = "main/" . $input['video']['file_name'];
+                        MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('default');
+                    } else {
+                        $data['media_path'] = "main/" . $input['video']['file_full_name'];
+                        $data['video_duration'] = $input['video']['video_duration'];
+                        $data['status'] = null;
+                        $this->aws_service->move($input['video']['file_path'], $data['media_path']);
+                        if($record->media_path) {
+                            $delete_files[] = [ 'Key' => $record->media_path ];
+                        }
                     }
-                    $outputPrefix = "main/" . $input['video']['file_name'];
-                    MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('default');
                 }
                 if(isset($input['gpx'])) {
                     $data['gpx_path'] = "main/" . $input['gpx']['file_full_name'];
@@ -200,7 +219,7 @@ class MediaController extends Controller
         } catch (\Throwable $exception) {
             \DB::rollBack();
             \Log::error($exception);
-            return back()->with(['error' => __("success_error")], 404);
+            return back()->with("error", __('success_error'));
         }
     }
 
@@ -233,9 +252,7 @@ class MediaController extends Controller
         } catch (\Throwable $exception) {
             \DB::rollBack();
             \Log::error($exception);
-            return response()->json([
-                "error" => __('success_error')
-            ], 404);
+            return back()->with("error", __('success_error'));
         }
     }
 
@@ -260,7 +277,7 @@ class MediaController extends Controller
     {
         try {
             $file_extension = $request->input('extension');
-            $file_name = date('Ymd') . '/'. date('Hisu') . mt_rand(100, 999);
+            $file_name = $this->generateName();
             $file_full_name = $file_name . "." . $file_extension;
             $file_path = "tmp/" . $file_full_name;
             
@@ -274,9 +291,86 @@ class MediaController extends Controller
             ]);
         } catch (\Throwable $exception) {
             \Log::error($exception);
-            return response()->json([
-                "error" => __('success_error')
-            ], 404);
+            return back()->with("error", __('success_error'));
         }
+    }
+
+
+    public function bulkUpload()
+    {
+        // $job = ["AccelerationSettings" => ["Mode" => "DISABLED"],"AccelerationStatus" => "NOT_APPLICABLE","Arn" => "arn => aws => mediaconvert => ap-northeast-1 => 465712026250 => jobs/1705548063858-f2se2d","BillingTagsSource" => "JOB","ClientRequestToken" => "cf6b9104-4168-4588-ace6-05f6843749dc","CreatedAt" => "2024-01-18 03 => 21 => 03","Id" => "1705548063858-f2se2d","Messages" => ["Info" => [],"Warning" => []],"OutputGroupDetails" => [["OutputDetails" => [["DurationInMs" => 30964,"VideoDetails" => ["HeightInPx" => 1080,"WidthInPx" => 2160]],["DurationInMs" => 30964,"VideoDetails" => ["HeightInPx" => 720,"WidthInPx" => 1440]],["DurationInMs" => 30964,"VideoDetails" => ["HeightInPx" => 480,"WidthInPx" => 960]]]]],"Priority" => 0,"Queue" => "arn => aws => mediaconvert => ap-northeast-1 => 465712026250 => queues/Default","Role" => "arn => aws => iam =>  => 465712026250 => role/service-role/MediaConvert_Default_Role","Settings" => ["FollowSource" => 1,"Inputs" => [["AudioSelectors" => ["Audio Selector 1" => ["DefaultSelection" => "DEFAULT"]],"FileInput" => "s3 => //3d-videos-new/convert/20240109/121748000000846.mp4","TimecodeSource" => "ZEROBASED","VideoSelector" => []]],"OutputGroups" => [["Name" => "Apple HLS","OutputGroupSettings" => ["HlsGroupSettings" => ["Destination" => "s3 => //3d-videos-new/main/20240118/122922000000527/index","MinSegmentLength" => 0,"SegmentLength" => 10],"Type" => "HLS_GROUP_SETTINGS"],"Outputs" => [["AudioDescriptions" => [["CodecSettings" => ["AacSettings" => "Over 9 levels deep, aborting normalization","Codec" => "Over 9 levels deep, aborting normalization"]]],"ContainerSettings" => ["Container" => "M3U8","M3u8Settings" => []],"NameModifier" => "_1080","OutputSettings" => ["HlsSettings" => []],"VideoDescription" => ["CodecSettings" => ["Codec" => "H_264","H264Settings" => ["MaxBitrate" => "Over 9 levels deep, aborting normalization","RateControlMode" => "Over 9 levels deep, aborting normalization","SceneChangeDetect" => "Over 9 levels deep, aborting normalization"]],"Height" => 1080]],["AudioDescriptions" => [["CodecSettings" => ["AacSettings" => "Over 9 levels deep, aborting normalization","Codec" => "Over 9 levels deep, aborting normalization"]]],"ContainerSettings" => ["Container" => "M3U8","M3u8Settings" => []],"NameModifier" => "_720","OutputSettings" => ["HlsSettings" => []],"VideoDescription" => ["CodecSettings" => ["Codec" => "H_264","H264Settings" => ["MaxBitrate" => "Over 9 levels deep, aborting normalization","RateControlMode" => "Over 9 levels deep, aborting normalization","SceneChangeDetect" => "Over 9 levels deep, aborting normalization"]],"Height" => 720]],["AudioDescriptions" => [["CodecSettings" => ["AacSettings" => "Over 9 levels deep, aborting normalization","Codec" => "Over 9 levels deep, aborting normalization"]]],"ContainerSettings" => ["Container" => "M3U8","M3u8Settings" => []],"NameModifier" => "_480","OutputSettings" => ["HlsSettings" => []],"VideoDescription" => ["CodecSettings" => ["Codec" => "H_264","H264Settings" => ["MaxBitrate" => "Over 9 levels deep, aborting normalization","RateControlMode" => "Over 9 levels deep, aborting normalization","SceneChangeDetect" => "Over 9 levels deep, aborting normalization"]],"Height" => 480]]]]],"TimecodeConfig" => ["Source" => "ZEROBASED"]],"Status" => "COMPLETE","StatusUpdateInterval" => "SECONDS_60","Timing" => ["FinishTime" => "2024-01-18 03 => 21 => 31","StartTime" => "2024-01-18 03 => 21 => 05","SubmitTime" => "2024-01-18 03 => 21 => 03"],"UserMetadata" => []];
+
+        // dd($job['OutputGroupDetails'][0]['OutputDetails'][0]['DurationInMs']);
+        // $record = Media::find(14);
+        // $outputPrefix = "main/20240118/122922000000527";
+        // MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('default');
+        // $queue = $this->mediaConvertClient->getQueue([
+        //     'Name' => 'Default',
+        // ]);
+        // dd($queue);
+        // $endPoint = $this->mediaConvertClient->describeEndpoints();
+        $upload_path = Setting::where('key', 's3_upload_folder')->first();
+        return Inertia::render('Admin/Media/BulkUpload', [
+            'upload_path' => $upload_path->value
+        ]);
+    }
+    
+    public function bulkUploadStore()
+    {
+        $upload_names = [];
+        try {
+            $admin = Auth::guard('admin')->user();
+
+            $setting = Setting::where("key", "s3_upload_folder")->first();
+            if(!$setting) {
+                return back()->with([
+                    'error' => "アップロードファイルに関する設定がありません。"
+                ], 404);
+            }
+            $folder = $setting->value;
+
+            $gpx_list = $this->aws_service->getList($folder, ".gpx");
+            $mp4_list = $this->aws_service->getList($folder, ".mp4");
+
+            // get list of same name files
+            $same_name_list = array_intersect($gpx_list, $mp4_list);
+
+            foreach($same_name_list as $name) {
+                $file_name = $this->generateName();
+                $data = [
+                    'admin_id' => $admin->id,
+                    'name' => $name,
+                    'type' => 1,
+                    'image_lat' => null,
+                    'image_long' => null,
+                    'media_path' => "convert/" . $file_name . ".mp4",
+                    "video_duration" => null,
+                    "gpx_path" => "main/" . $file_name . ".gpx",
+                ];
+                $video_file_path = $folder . "/" . $name . ".mp4";
+                $gpx_file_path = $folder . "/" . $name . ".gpx";
+                $this->aws_service->move($video_file_path, $data['media_path']);
+                $this->aws_service->move($gpx_file_path, $data['gpx_path']);
+                $record = Media::create($data);
+                $outputPrefix = "main/" . $file_name;
+                MediaConvertJob::dispatch($record, $outputPrefix)->onQueue('default');
+                $upload_names[] = $file_name . ".mp4";
+                $upload_names[] = $file_name . ".gpx";
+            }
+            return back()->with([
+                'success' => __("success_upload"),
+                'data' => $upload_names,
+            ]);
+        } catch (\Throwable $exception) {
+            \Log::error($exception);
+            return back()->with([
+                'error' => __("success_error"),
+                'data' => $upload_names,
+            ]);
+        }
+    }
+
+    public function generateName() {
+       return date('Ymd') . '/'. date('Hisu')  . '_'. mt_rand(100, 999);
     }
 }

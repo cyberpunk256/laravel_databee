@@ -27,7 +27,7 @@ import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue'
                 v-model="form.map_default_zoom"
                 label="マップデフォルトZoom"
                 variant="underlined"
-                type="map_default_zoom"
+                type="number"
                 :error-messages="form.errors.map_default_zoom"
               />
             </v-col>
@@ -101,6 +101,7 @@ export default {
     }
   },
   mounted() {
+    console.log('flash', this.constant)
     const self = this
     self.form.map_gpx_weight = self.settings.map_gpx_weight
     self.form.map_default_zoom = self.settings.map_default_zoom

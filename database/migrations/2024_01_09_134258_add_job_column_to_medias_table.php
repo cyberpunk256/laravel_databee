@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('medias', function (Blueprint $table) {
-            $table->string('dir')->nullable();
+            $table->tinyInteger('status')->nullable()->after('image_long');
+            $table->string('job_id')->nullable()->after('status');
         });
     }
 
@@ -22,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('medias', function (Blueprint $table) {
-            $table->string('dir')->nullable();
+            $table->dropColumn('status');
+            $table->dropColumn('job_id');
         });
     }
 };

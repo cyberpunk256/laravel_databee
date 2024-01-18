@@ -22,8 +22,8 @@ class SettingUpdateRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'map_gpx_weight' => ['required', 'numeric', 'max:255'],
-            'map_default_zoom' => ['required', 'numeric', 'max:255'],
+            'map_gpx_weight' => ['required', 'integer', 'max:255'],
+            'map_default_zoom' => ['required', 'integer', 'max:255'],
             's3_upload_folder' => ['required', 'string', 'max:255'],
             'media_conver_options' => ['required', 'array'],
             'media_conver_options.*.resolution' => ['required', 'numeric', 'min:10', 'max:5000'],

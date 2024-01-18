@@ -121,12 +121,27 @@ class AWSService
         }
     }
 
-    public function getList()
+    public function getList($folder, $type = null)
     {
         $list = $this->s3client->listObjects([
             'Bucket' => config('filesystems.disks.s3.bucket'),
+            'Prefix' => $folder,
         ]);
-        return $list['Contents'];
+        $items = $list['Contents'];
+        $names = [];
+        if($type) {
+            // filter by type in items array
+            $items = array_filter($items, function($item) use ($type) {
+                return str_ends_with($item['Key'], $type);
+            });
+            $names = array_map(function($item) use($folder, $type) {
+                // remove two string from item['Key']
+                $value = str_replace($folder . "/", "", $item['Key']);
+                $value = str_replace($type, "", $value);
+                return $value;
+            }, $items); 
+        }
+        return $names;
     }
 
     public function getFile(String $path) 

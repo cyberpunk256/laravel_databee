@@ -59,9 +59,7 @@ class CaptureController extends Controller
         } catch (\Throwable $exception) {
             \DB::rollBack();
             \Log::error($exception);
-            return response()->json([
-                "error" => __('success_error')
-            ], 404);
+            return back()->with("error", __('success_error'));
         }
     }
 }

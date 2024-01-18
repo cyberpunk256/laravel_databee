@@ -63,9 +63,9 @@ return [
         ],
     ],
     'map' => [
-        'gpx' => [
-            'weight' => 15,
-        ],
+        // 'gpx' => [
+        //     'weight' => 15,
+        // ],
         'marker' => [
             'icon' => '/pin-image.png',
             'size' => 50
@@ -75,7 +75,7 @@ return [
             'lat' => 35.685175, 
             'long' => 139.7528
         ], // 東京の皇居
-        'zoom' => 10,
+        // 'zoom' => 10,
     ],
 ];
 ?>

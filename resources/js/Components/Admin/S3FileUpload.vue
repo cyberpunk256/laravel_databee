@@ -28,6 +28,19 @@
     <v-input :error-messages="error"> </v-input>
     <v-dialog v-model="encodeDialog" persistent width="auto">
       <v-card>
+        <v-card-text>動画をアップロードした後エンコードしますか？</v-card-text>
+        <v-row class="my-0" justify="center">
+          <v-col cols="auto">
+            <v-btn variant="elevated" color="primary" size="small" @click="onChangeEncoding(1)">同意する</v-btn>
+          </v-col>
+          <v-col cols="auto">
+            <v-btn size="small" @click="onChangeEncoding(0)">同意しない</v-btn>
+          </v-col>
+        </v-row>
+      </v-card>
+    </v-dialog> 
+    <!-- <v-dialog v-model="encodeDialog" persistent width="auto">
+      <v-card>
         <v-card-text>エンコード中・・・</v-card-text>
         <v-divider></v-divider>
         <v-progress-linear
@@ -43,7 +56,7 @@
           </v-col>
         </v-row>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
   </div>
 </template>
 
@@ -81,6 +94,7 @@ export default {
       image_long: null,
       dropzone: null,
       encodeDialog: false,
+      encoding: null,
       ffmpegObj: null,
       inputFilePath: 'input.mp4',
       outputFilePath: 'output.mp4',
@@ -176,6 +190,7 @@ export default {
         }
         const extension = file.name.split('.').pop().toLowerCase()
         if (file.type.indexOf('video/') > -1) {
+          self.encodeDialog = true
           const video = document.createElement('video')
           video.src = URL.createObjectURL(file)
           video.addEventListener('loadedmetadata', function () {
@@ -232,6 +247,7 @@ export default {
           video_duration: self.video_duration,
           image_lat: self.image_lat,
           image_long: self.image_long,
+          encoding: self.encoding,
         })
       })
 
@@ -253,6 +269,10 @@ export default {
         }
       })
     },
+    onChangeEncoding(value) {
+      this.encoding = value
+      this.encodeDialog = false
+    }
     // async transcode(file) {
     //   const self = this
     //   try {
@@ -307,25 +327,25 @@ export default {
     //     this.encodeDialog = false
     //   }
     // },
-    async onStopEncode() {
-      console.log('onStopEncode')
-      this.encodeDialog = false
-      if (this.ffmpegObj) {
-        try {
-          await this.ffmpegObj.deleteFile(this.inputFilePath)
-        } catch (e) {
-          console.log(e)
-        }
-        try {
-          await this.ffmpegObj.deleteFile(this.outputFilePath)
-        } catch (e) {
-          console.log(e)
-        }
-        this.ffmpegObj.terminate()
-        this.ffmpegObj = null
-        this.dropzone.removeAllFiles()
-      }
-    },
+    // async onStopEncode() {
+    //   console.log('onStopEncode')
+    //   this.encodeDialog = false
+    //   if (this.ffmpegObj) {
+    //     try {
+    //       await this.ffmpegObj.deleteFile(this.inputFilePath)
+    //     } catch (e) {
+    //       console.log(e)
+    //     }
+    //     try {
+    //       await this.ffmpegObj.deleteFile(this.outputFilePath)
+    //     } catch (e) {
+    //       console.log(e)
+    //     }
+    //     this.ffmpegObj.terminate()
+    //     this.ffmpegObj = null
+    //     this.dropzone.removeAllFiles()
+    //   }
+    // },
   },
 }
 </script>

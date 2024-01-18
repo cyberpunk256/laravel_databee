@@ -78,45 +78,45 @@ export default {
       iconSize: [iconSize, iconSize], // Set the size of the icon
     })
 
-    self.map = L.map('map').setView(self.constant.map.view, self.constant.map.zoom).on('zoomend', self.onZoomChange)
+    const map = L.map('map').setView(self.constant.map.view, self.constant.map.zoom).on('zoomend', self.onZoomChange)
 
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>',
-    }).addTo(self.map)
+    }).addTo(map)
 
     if (self.record.type == 1) {
       // video
       const gpx_url = self.get_path_url(self.record.gpx_path)
-      new L.GPX(gpx_url, this.gpxOptions).on('loaded', self.onLoaded).on('click', function () {
-        self.onShowModal()
-      })
+      new L.GPX(gpx_url, this.gpxOptions)
+        .on('loaded', function (e) {
+          map.fitBounds(e.target.getBounds())
+        })
+        .addTo(map)
+        .on('click', function () {
+          self.onShowModal()
+        })
     } else if (self.record.type == 2 || self.record.type == 3) {
       const coordinate =
         self.record.image_lat && self.record.image_long
           ? [self.record.image_lat, self.record.image_long]
           : self.constant.map.init_pos
 
-      self.marker = L.marker(coordinate, { icon: marker_icon, draggable: true })
-        .addTo(self.map)
+      const marker = L.marker(coordinate, { icon: marker_icon, draggable: true })
+        .addTo(map)
         .on('click', function () {
           self.onShowModal()
         })
 
       // マウススクロールイベントのリスナーを追加
-      self.marker.on('dragstart', function (e) {})
-      self.marker.on('dragend', function (e) {
-        var newPosition = self.marker.getLatLng()
+      marker.on('dragstart', function (e) {})
+      marker.on('dragend', function (e) {
+        var newPosition = marker.getLatLng()
         self.$emit('update', newPosition)
       })
     }
   },
   methods: {
-    onLoaded(e) {
-      const gpxLayer = e.target
-      this.map.fitBounds(gpxLayer.getBounds())
-      console.log('gpxLayer.getBounds()', gpxLayer.getBounds())
-      gpxLayer.addTo(this.map)
-    },
+    onLoaded(e) {},
     onShowModal() {
       if (this.record.type == 1) {
         this.modal_video_url = this.record.video_path

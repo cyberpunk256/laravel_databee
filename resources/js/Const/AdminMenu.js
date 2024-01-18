@@ -39,7 +39,7 @@ export default {
     {
       title: 'アップロード',
       icon: 'mdi-upload',
-      to: '/admin/upload',
+      to: '/admin/bulk_upload',
       roles: [1]
     },
   ],

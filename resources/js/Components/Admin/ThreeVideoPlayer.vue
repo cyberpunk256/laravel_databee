@@ -158,7 +158,7 @@ export default {
     changeQuality(value) {
       console.log('changeQuality')
       this.hls.nextLevel = value
-      self.current_quality = self.qualities.find((x) => x.value == value)
+      this.current_quality = this.qualities.find((x) => x.value == value)
       return false
     },
   },

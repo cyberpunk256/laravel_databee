@@ -4,99 +4,103 @@ import Map from '@/Pages/Admin/Media/Parts/Map.vue'
 </script>
 
 <template>
-  <v-card :class="[tab == 'form' ? 'd-block' : 'd-none']">
-    <v-card-text>
-      <v-text-field v-model="form.name" label="メディア名" variant="underlined" :error-messages="form.errors.name" />
-      <v-select
-        v-model="form.type"
-        :items="constant.enums.media_types"
-        :error-messages="form.errors.type"
-        item-title="text"
-        item-value="value"
-        label="メディア種別"
-        variant="underlined"
-        class="mt-4"
-        @change="onTypeChange"
-      />
-      <template v-if="form.type == 1">
-        <S3FileUpload
-          :origin="form.origin_video_path"
-          :error="form.errors.video"
-          type="video"
-          label="メディアファイルをアップロードしてください。"
-          class="mt-2"
-          @success="(value) => onFileUploaded('video', value)"
-          @remove="onFileUploaded('video', null)"
-          @removeOrign="onRemoveOrigin('origin_video_path')"
-          @status="(value) => onUploadStatus('video', value)"
+  <div>
+    <p class="mb-2">3DMovieファイルをアップロードする時にエラーが発生した場合にはページをリロードしてください。</p>
+    <v-card :class="[tab == 'form' ? 'd-block' : 'd-none']">
+      <v-card-text>
+        <v-text-field v-model="form.name" label="メディア名" variant="underlined" :error-messages="form.errors.name" />
+        <v-select
+          v-model="form.type"
+          :items="constant.enums.media_types"
+          :error-messages="form.errors.type"
+          item-title="text"
+          item-value="value"
+          label="メディア種別"
+          variant="underlined"
+          class="mt-4"
+          @change="onTypeChange"
         />
-        <S3FileUpload
-          :origin="form.origin_gpx_path"
-          :error="form.errors.gpx"
-          type="gpx"
-          label="GPXファイルをアップロードしてください。"
-          class="mt-2"
-          @success="(value) => onFileUploaded('gpx', value)"
-          @remove="onFileUploaded('gpx', null)"
-          @removeOrign="onRemoveOrigin('origin_gpx_path')"
-          @status="(value) => onUploadStatus('gpx', value)"
-        />
-      </template>
-      <template v-if="form.type == 2">
-        <S3FileUpload
-          :origin="form.origin_image_path"
-          :error="form.errors.image"
-          type="image"
-          label="メディアファイルをアップロードしてください。"
-          class="mt-2"
-          @success="(value) => onFileUploaded('image', value)"
-          @remove="onFileUploaded('image', null)"
-          @removeOrign="onRemoveOrigin('origin_image_path')"
-          @status="(value) => onUploadStatus('image', value)"
-        />
-      </template>
-      <template v-if="form.type == 3">
-        <S3FileUpload
-          :origin="form.origin_image_path"
-          :error="form.errors.panorama"
-          type="panorama"
-          label="メディアファイルをアップロードしてください。"
-          class="mt-2"
-          @success="(value) => onFileUploaded('image', value)"
-          @remove="onFileUploaded('image', null)"
-          @removeOrign="onRemoveOrigin('origin_image_path')"
-          @status="(value) => onUploadStatus('image', value)"
-        />
-      </template>
-      <template v-if="form.type == 2 || form.type == 3">
-        <v-text-field v-model="form.image_lat" label="経度" variant="underlined" />
-        <v-text-field v-model="form.image_long" label="緯度" variant="underlined" />
-      </template>
-    </v-card-text>
-    <v-divider></v-divider>
-    <v-row class="py-4" justify="center">
-      <v-col cols="auto">
-        <Link href="/admin/media" as="div">
-          <v-btn text>キャンセル</v-btn>
-        </Link>
-      </v-col>
-      <v-col cols="auto">
-        <v-btn :disabled="computedPreviewStatus" color="primary" @click.stop="onPreview">プレビュー</v-btn>
-      </v-col>
-    </v-row>
-  </v-card>
-  <v-card :class="[tab == 'form' ? 'd-none' : 'd-block']">
-    <Map v-if="computedRecord" :record="computedRecord" @update="onUpdateLatLng"></Map>
-    <v-divider></v-divider>
-    <v-row class="py-4" justify="center">
-      <v-col cols="auto">
-        <v-btn text @click="onBack">戻る</v-btn>
-      </v-col>
-      <v-col cols="auto">
-        <v-btn :disabled="loading" color="primary" @click.stop="onSubmit">{{ type == 'new' ? '登録' : '更新' }}</v-btn>
-      </v-col>
-    </v-row>
-  </v-card>
+        <template v-if="form.type == 1">
+          <S3FileUpload
+            :origin="form.origin_video_path"
+            :error="form.errors.video"
+            type="video"
+            label="メディアファイルをアップロードしてください。"
+            class="mt-2"
+            @success="(value) => onFileUploaded('video', value)"
+            @remove="onRemove('video')"
+            @removeOrign="onRemove('origin_video_path')"
+            @encoding="onChangeEncoding"
+            @status="(value) => onUploadStatus('video', value)"
+          />
+          <S3FileUpload
+            :origin="form.origin_gpx_path"
+            :error="form.errors.gpx"
+            type="gpx"
+            label="GPXファイルをアップロードしてください。"
+            class="mt-2"
+            @success="(value) => onFileUploaded('gpx', value)"
+            @remove="onRemove('gpx')"
+            @removeOrign="onRemove('origin_gpx_path')"
+            @status="(value) => onUploadStatus('gpx', value)"
+          />
+        </template>
+        <template v-if="form.type == 2">
+          <S3FileUpload
+            :origin="form.origin_image_path"
+            :error="form.errors.image"
+            type="image"
+            label="メディアファイルをアップロードしてください。"
+            class="mt-2"
+            @success="(value) => onFileUploaded('image', value)"
+            @remove="onRemove('image')"
+            @removeOrign="onRemove('origin_image_path')"
+            @status="(value) => onUploadStatus('image', value)"
+          />
+        </template>
+        <template v-if="form.type == 3">
+          <S3FileUpload
+            :origin="form.origin_image_path"
+            :error="form.errors.panorama"
+            type="panorama"
+            label="メディアファイルをアップロードしてください。"
+            class="mt-2"
+            @success="(value) => onFileUploaded('image', value)"
+            @remove="onRemove('image')"
+            @removeOrign="onRemove('origin_image_path')"
+            @status="(value) => onUploadStatus('image', value)"
+          />
+        </template>
+        <template v-if="form.type == 2 || form.type == 3">
+          <v-text-field v-model="form.image_lat" label="経度" variant="underlined" />
+          <v-text-field v-model="form.image_long" label="緯度" variant="underlined" />
+        </template>
+      </v-card-text>
+      <v-divider></v-divider>
+      <v-row class="py-4" justify="center">
+        <v-col cols="auto">
+          <Link href="/admin/media" as="div">
+            <v-btn text>キャンセル</v-btn>
+          </Link>
+        </v-col>
+        <v-col cols="auto">
+          <v-btn :disabled="computedPreviewStatus" color="primary" @click.stop="onPreview">プレビュー</v-btn>
+        </v-col>
+      </v-row>
+    </v-card>
+    <v-card :class="[tab == 'form' ? 'd-none' : 'd-block']">
+      <Map v-if="computedRecord" :record="computedRecord" @update="onUpdateLatLng"></Map>
+      <v-divider></v-divider>
+      <v-row class="py-4" justify="center">
+        <v-col cols="auto">
+          <v-btn text @click="onBack">戻る</v-btn>
+        </v-col>
+        <v-col cols="auto">
+          <v-btn :disabled="loading" color="primary" @click.stop="onSubmit">{{ type == 'new' ? '登録' : '更新' }}</v-btn>
+        </v-col>
+      </v-row>
+    </v-card>
+  </div>
 </template>
 
 <script>
@@ -117,6 +121,7 @@ export default {
         origin_video_path: null,
         origin_image_path: null,
         origin_gpx_path: null,
+        encoding: null
       }),
       modal: false,
       upload_status: {
@@ -174,6 +179,7 @@ export default {
         origin_video_path: null,
         origin_image_path: null,
         origin_gpx_path: null,
+        encoding: null,
       })
       if (this.record.type == 1) {
         // video
@@ -194,6 +200,7 @@ export default {
       }
       this.form.image_lat = data.image_lat
       this.form.image_long = data.image_long
+      this.form.encoding = data.encoding
       console.log('form', this.form)
     },
     onValidate() {
@@ -237,7 +244,7 @@ export default {
     onBack() {
       this.$emit('back')
     },
-    onRemoveOrigin(field) {
+    onRemove(field) {
       this.form[field] = null
     },
     onTypeChange() {
@@ -250,6 +257,9 @@ export default {
     onUpdateLatLng(latLng) {
       this.form.image_lat = latLng.lat
       this.form.image_long = latLng.lng
+    },
+    onChangeEncoding(value) {
+      this.form.encoding = value
     },
     onSubmit() {
       const self = this

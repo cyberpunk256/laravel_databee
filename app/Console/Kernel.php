@@ -14,9 +14,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->call(function () {
-            Artisan::call('migrate:fresh');
-            Artisan::call('db:seed');
-        })->hourly();
+            Artisan::call('app:update-media-status');
+        })->everyTenSeconds();
     }
 
     /**

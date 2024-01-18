@@ -47,28 +47,12 @@ class MediaConvertJob implements ShouldQueue
       ]);
 
       $jobId = $result['Job']['Id'];
-
-      // ジョブが完了するまでポーリング
-      do {
-          $job = $mediaConvertClient->getJob(['Id' => $jobId]);
-          $jobStatus = $job['Job']['Status'];
-
-          if ($jobStatus === 'COMPLETE') {
-              $this->media->update([
-                  'queue' => 1, // complete
-                  'media_path' => $this->outputPrefix . "/index.m3u8",
-              ]);
-
-              \Log::info('MediaConvertJob Status - COMPLETE - ', $job['Job']);
-          } elseif ($jobStatus === 'ERROR') {
-              \Log::error('MediaConvertJob Status - ERROR');
-          }
-
-          sleep(10); // 5秒ごとにポーリング
-
-      } while ($jobStatus !== 'COMPLETE');
-    } catch (AwsException $e) {
-        \Log::error($e);
+      $this->media->update([
+          'status' => 0, // converting
+          'job_id' => $jobId
+      ]);
+    } catch (\Throwable $exception) {
+        \Log::error($exception);
     }
   }
 
