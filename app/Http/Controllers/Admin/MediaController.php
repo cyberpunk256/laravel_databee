@@ -35,9 +35,6 @@ class MediaController extends Controller
                     $sub_query->select('id', 'name');
                 }
             ])
-            ->addSelect(\DB::raw("
-                CASE WHEN deleted_at IS NULL THEN 1 ELSE 0 END as status
-            "))
             ->when($request->get('search'), function ($query, $search) {
                 return $query->where('name', 'LIKE', "%$search%");
             })->when($request->get('sort'), function ($query, $sortBy) {
@@ -54,7 +51,7 @@ class MediaController extends Controller
         }
 
         $limit = $request->get('limit', 10);
-        if($limit < 0) $limit = 0;
+        if($limit < 0) $limit = PHP_INT_MAX;
         $data = $query->paginate($limit);
 
         return Inertia::render('Admin/Media/Index', [
@@ -329,8 +326,8 @@ class MediaController extends Controller
             }
             $folder = $setting->value;
 
-            $gpx_list = $this->aws_service->getList($folder, ".gpx");
-            $mp4_list = $this->aws_service->getList($folder, ".mp4");
+            $gpx_list = $this->aws_service->getNameList($folder, ".gpx");
+            $mp4_list = $this->aws_service->getNameList($folder, ".mp4");
 
             // get list of same name files
             $same_name_list = array_intersect($gpx_list, $mp4_list);

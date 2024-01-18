@@ -22,9 +22,9 @@ class Media extends Model
         'gpx_path',
         'image_lat',
         'image_long',
-        'deleted_at',
         'status',
-        'job_id'
+        'job_id',
+        'deleted_at',
     ];  
 
     /**

@@ -53,16 +53,19 @@ import { Head, Link } from '@inertiajs/vue3'
         <template #[`item.type`]="{ item }">
           {{ getTextOfOption(constant.enums.media_types, item.columns.type) }}
           </template>
-        <template #[`item.status`]="{ item }">
+        <template #[`item.deleted_at`]="{ item }">
           <v-switch 
             color="primary" 
             inset
             hide-details
-            v-model="item.columns.status" 
+            :value="item.columns.deleted_at ? 0 : 1" 
             :true-value="1"
             :false-value="0"
             @change="onChangeStatus(item.columns.id)"
           ></v-switch>
+        </template>
+        <template #[`item.status`]="{ item }">
+          {{ getStatusText(item.columns.status) }}
         </template>
         <template #[`item.action`]="{ item }">
           <Link :href="`/admin/media/${item.value}/edit`" as="button">
@@ -115,9 +118,10 @@ export default {
         { title: 'ID', key: 'id', sortable: false },
         { title: 'メディア名', key: 'name', sortable: false },
         { title: '投稿者', key: 'admin_name', sortable: false },
-        { title: '投稿日', key: 'updated_at', sortable: false },
         { title: '種別', key: 'type', sortable: false },
-        { title: '有効', key: 'status', sortable: false },
+        { title: '有効', key: 'deleted_at', sortable: false },
+        { title: '状態', key: 'status', sortable: false },
+        { title: '投稿日', key: 'updated_at', sortable: false },
         { title: '', key: 'action', sortable: false },
       ],
       breadcrumbs: [

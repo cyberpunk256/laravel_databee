@@ -121,7 +121,7 @@ class AWSService
         }
     }
 
-    public function getList($folder, $type = null)
+    public function getNameList($folder, $type = null)
     {
         $list = $this->s3client->listObjects([
             'Bucket' => config('filesystems.disks.s3.bucket'),
@@ -142,6 +142,15 @@ class AWSService
             }, $items); 
         }
         return $names;
+    }
+
+    public function getList($folder)
+    {
+        $list = $this->s3client->ListObjectsV2([
+            'Bucket' => config('filesystems.disks.s3.bucket'),
+            'Prefix' => $folder,
+        ]);
+        return $list;
     }
 
     public function getFile(String $path) 

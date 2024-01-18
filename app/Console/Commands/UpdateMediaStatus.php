@@ -35,7 +35,6 @@ class UpdateMediaStatus extends Command
                 ->whereNotNull('job_id')
                 ->get();
             foreach($medias as $media) {
-                if($media->job_id === null) continue;
                 $job = $mediaConvertClient->getJob(['Id' => $media->job_id]);
                 $jobStatus = $job['Job']['Status'];
                 if ($jobStatus === 'COMPLETE') {

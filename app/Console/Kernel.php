@@ -16,6 +16,9 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             Artisan::call('app:update-media-status');
         })->everyTenSeconds();
+        $schedule->call(function () {
+            Artisan::call('app:delete-media');
+        })->daily();
     }
 
     /**

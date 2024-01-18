@@ -10,11 +10,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AdminUpdateRequest;
 use App\Models\Admin;
 use App\Models\Group;
+use App\Services\AWSService;
 
 class AdminController extends Controller
 {
     public function index(Request $request)
     {
+        // $aws_service = new AWSService();
+        // $tmp_obj = $aws_service->getList("tmp")->toArray();
+        // $tmp_list = $tmp_obj['Contents'];
+        // dd($tmp_list);
         $query = Admin::query()
             ->select('*')
             ->with([

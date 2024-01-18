@@ -53,6 +53,18 @@ export default {
     getYmdHiFromDTS(datetime_str, apply_limit = 0) {
       return moment(datetime_str, 'YYYY-MM-DD HH:mm:ss').add(apply_limit, 'days').format('YYYY年MM月DD日 HH:mm')
     },
+    getStatusText(value) {
+      switch (value) {
+        case 0:
+          return 'エンコード中'
+        case 1:
+          return 'エンコード完了'
+        case 2:
+          return 'エンコードエラー'
+        default:
+          return ''
+      }
+    },
     onZoomChange() {
       const self = this
       if (this.map) {

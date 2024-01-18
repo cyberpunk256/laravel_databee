@@ -21,6 +21,8 @@ class IndexController extends Controller
     {
         $user = Auth()->user();
         $records = Media::query()
+            ->whereIn('status', [null, 1])
+            ->whereNull('job_id')
             ->whereHas('admin', function ($query) use($user) {
                 $query->where('pref', $user->pref); 
             })
