@@ -69,11 +69,6 @@ export default {
   data() {
     return {
       map: null,
-      map_default_option: {
-        view: [0,0],
-        pin: [0,0],
-        scale: 1
-      },
       modal: false,
       modal_type: 1, // video
       modal_video_url: null,
@@ -105,6 +100,9 @@ export default {
   },
   mounted() {
     const self = this
+    const map_options = {
+      maxZoom: self.constant.map.max_zoom,
+    }
     const init_pos = self.user.init_lat && self.user.init_long ? 
       [self.user.init_lat, self.user.init_long] :
       self.constant.map.view
@@ -118,11 +116,14 @@ export default {
       iconSize: [iconSize, iconSize], // Set the size of the icon
     });
 
-    self.map = L.map('map').setView(init_pos,this.constant.map.zoom)
+    console.log('this.constant.map.zoom', this.constant.map.zoom)
+
+    const map = L.map('map', map_options).setView(init_pos,this.constant.map.zoom)
       .on('zoomend', self.onZoomChange);
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
-    }).addTo(self.map)
+      attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>',
+      maxZoom: self.constant.map.max_zoom
+    }).addTo(map)
     for (let i = 0; i < self.records.length; i++) {
       const record = self.records[i];
       if(record.type == 1) { // video
@@ -136,7 +137,7 @@ export default {
           [record.image_lat, record.image_long] : this.constant.map.pin
         
         const pin_marker = L.marker(coordinate, { icon: marker_icon, draggable: true })
-          .addTo(self.map)
+          .addTo(map)
           .on('click', function() {
             self.onShowModal(record)
           });
@@ -144,6 +145,7 @@ export default {
         this.loaded_gpxs += 1
       }
     }
+    this.map = map
   },
   watch: {
     loaded_gpxs(new_loaded_gpxs) {

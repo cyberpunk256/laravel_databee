@@ -67,6 +67,9 @@ export default {
   },
   mounted() {
     const self = this
+    const map_options = {
+      maxZoom: self.constant.map.max_zoom,
+    }
     console.log('constant', self.constant)
     self.gpxOptions.polyline_options.weight = self.getLineWeightByZoom(
       self.constant.map.zoom,
@@ -78,10 +81,11 @@ export default {
       iconSize: [iconSize, iconSize], // Set the size of the icon
     })
 
-    const map = L.map('map').setView(self.constant.map.view, self.constant.map.zoom).on('zoomend', self.onZoomChange)
+    const map = L.map('map', map_options).setView(self.constant.map.view, self.constant.map.zoom).on('zoomend', self.onZoomChange)
 
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>',
+      maxZoom: self.constant.map.max_zoom
     }).addTo(map)
 
     if (self.record.type == 1) {

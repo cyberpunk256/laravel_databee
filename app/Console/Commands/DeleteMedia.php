@@ -52,7 +52,7 @@ class DeleteMedia extends Command
                 $lastModified = strtotime($object['LastModified']);
                 
                 if ($lastModified < strtotime('-1 day') && $object['Key'] != "convert/") {
-                    // $aws_service->deleteFiles([$object]);
+                    $aws_service->deleteFiles([$object]);
                     \Log::info('Deleted: ' . $object['Key']);
                 }
             }

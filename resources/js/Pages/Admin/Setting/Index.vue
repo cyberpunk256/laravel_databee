@@ -33,6 +33,15 @@ import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue'
             </v-col>
             <v-col cols="12">
               <v-text-field
+                v-model="form.map_max_zoom"
+                label="マップ最大Zoom"
+                variant="underlined"
+                type="number"
+                :error-messages="form.errors.map_max_zoom"
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-text-field
                 v-model="form.s3_upload_folder"
                 label="S3アップロードフォルダー"
                 variant="underlined"
@@ -95,6 +104,7 @@ export default {
       form: useForm({
         map_gpx_weight: null,
         map_default_zoom: null,
+        map_max_zoom: null,
         s3_upload_folder: null,
         media_conver_options: [],
       }),
@@ -105,6 +115,7 @@ export default {
     const self = this
     self.form.map_gpx_weight = self.settings.map_gpx_weight
     self.form.map_default_zoom = self.settings.map_default_zoom
+    self.form.map_max_zoom = self.settings.map_max_zoom
     self.form.s3_upload_folder = self.settings.s3_upload_folder
     self.form.media_conver_options = JSON.parse(self.settings.media_conver_options)
   },

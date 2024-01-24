@@ -23,7 +23,13 @@ class SettingController extends Controller
         try {
             \DB::beginTransaction();
             
-            $data = $request->only(['map_gpx_weight', 'map_default_zoom', 's3_upload_folder', 'media_conver_options']);
+            $data = $request->only([
+                'map_gpx_weight', 
+                'map_default_zoom', 
+                'map_max_zoom', 
+                's3_upload_folder', 
+                'media_conver_options'
+            ]);
             foreach($data as $key => $value) {
                 if($key == 'media_conver_options') {
                     $value = json_encode($value);

@@ -51,7 +51,6 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'cloudfront_domain' => env('AWS_CLOUDFRONT_DOMAIN'),
-            'cloudfront_key_pair_id' => env('AWS_CLOUDFRONT_KEY_PAIR_ID'),
             'cloudfront_private_key_path' => env('AWS_CLOUDFRONT_PRIVATE_KEY_PATH'),
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),

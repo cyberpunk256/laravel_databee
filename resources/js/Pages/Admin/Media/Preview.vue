@@ -85,6 +85,9 @@ export default {
   mounted() {
     console.log('thisuser', this.user)
     const self = this
+    const map_options = {
+      maxZoom: self.constant.map.max_zoom,
+    }
     const init_pos = self.user.init_lat && self.user.init_long ? 
       [self.user.init_lat, self.user.init_long] :
       self.constant.map.view
@@ -98,10 +101,11 @@ export default {
       iconSize: [iconSize, iconSize], // Set the size of the icon
     });
     
-    self.map = L.map('map').setView(init_pos, self.constant.map.zoom)
+    self.map = L.map('map', map_options).setView(init_pos, self.constant.map.zoom)
       .on('zoomend', self.onZoomChange);
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
+      attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>',
+      maxZoom: self.constant.map.max_zoom
     }).addTo(self.map)
     for (let i = 0; i < self.records.length; i++) {
       const record = self.records[i];
