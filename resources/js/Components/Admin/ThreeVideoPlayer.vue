@@ -71,6 +71,11 @@ export default {
       console.log(e)
     }
   },
+  unmounted() {
+    if (self.video) self.video.remove()
+    if (self.panorama) self.panorama.dispose()
+    if (self.viewer) self.viewer.dispose()
+  },
   methods: {
     async initVideoPlayer() {
       const self = this
@@ -81,8 +86,6 @@ export default {
       })
 
       // Create a VideoPanorama with your 360-degree video
-      // self.panorama = new VideoPanorama(this.video_url, {
-      // self.panorama = new VideoPanorama(this.video_url, {
       self.panorama = new VideoPanorama(this.video_url, {
         // autoplay: false, // Disable auto-play for custom control handling
       })

@@ -51,21 +51,21 @@ import { Head, Link } from '@inertiajs/vue3'
           {{ getYmdHiFromDTS(item.raw.updated_at) }}
         </template>
         <template #[`item.type`]="{ item }">
-          {{ getTextOfOption(constant.enums.media_types, item.columns.type) }}
+          {{ getTextOfOption(constant.enums.media_types, item.raw.type) }}
           </template>
         <template #[`item.deleted_at`]="{ item }">
           <v-switch 
             color="primary" 
             inset
             hide-details
-            :value="item.columns.deleted_at ? 0 : 1" 
+            :model-value="item.raw.deleted_at ? 0 : 1" 
             :true-value="1"
             :false-value="0"
-            @change="onChangeStatus(item.columns.id)"
+            @change="onChangeStatus(item.raw.id)"
           ></v-switch>
         </template>
         <template #[`item.status`]="{ item }">
-          {{ getStatusText(item.columns.status) }}
+          {{ getStatusText(item.raw.status) }}
         </template>
         <template #[`item.action`]="{ item }">
           <Link :href="`/admin/media/${item.value}/edit`" as="button">
