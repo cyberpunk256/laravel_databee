@@ -21,7 +21,10 @@ class IndexController extends Controller
     {
         $user = Auth()->user();
         $records = Media::query()
-            ->whereIn('status', [null, 1])
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhere('status', 1);
+            })
             ->whereHas('admin', function ($query) use($user) {
                 $query->where('pref', $user->pref); 
             })
