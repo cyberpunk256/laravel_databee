@@ -35,7 +35,7 @@ class AdminHandleInertiaRequests extends Middleware
         $map_default_zoom = Setting::where('key', 'map_default_zoom')->first();
         $map_max_zoom = Setting::where('key', 'map_max_zoom')->first();
         $constant = array_merge(config('constant'), [
-            'bucket_path' => "https://" . config('filesystems.disks.s3.bucket') . ".s3." . config('filesystems.disks.s3.region') . "." . "amazonaws.com/",
+            'cloudfront_domain' => "https://" . config('filesystems.disks.s3.cloudfront_domain'),
         ]);
         $constant['map']['gpx']['weight'] = intval($map_gpx_weight->value);
         $constant['map']['zoom'] = intval($map_default_zoom->value);

@@ -133,7 +133,7 @@ export default {
   watch: {
     loaded_gpxs(new_loaded_gpxs) {
       if(new_loaded_gpxs == this.records.length) {
-        // this.map.fitBounds(this.bounds_sum);
+        this.map.fitBounds(this.bounds_sum);
       }
     },
   },

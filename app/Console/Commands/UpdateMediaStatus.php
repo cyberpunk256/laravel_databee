@@ -46,7 +46,6 @@ class UpdateMediaStatus extends Command
                     $media->update([
                         'status' => 1, // complete
                         'media_path' => $abs_path,
-                        'job_id' => null,       
                         'video_duration' => $option['DurationInMs']
                     ]);
                     \Log::info('MediaConvertJob Status - COMPLETE - Media ID:' . $media->id);

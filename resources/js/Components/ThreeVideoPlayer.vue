@@ -12,7 +12,7 @@
         <v-col cols="auto" class="pa-2">
           <v-btn density="comfortable" icon="mdi-fast-forward" @click="onFast"></v-btn>
         </v-col>
-        <v-col cols="auto" class="pa-2">
+        <v-col v-if="isM3u8" cols="auto" class="pa-2">
           <v-menu>
             <template #activator="{ props }">
               <v-btn v-bind="props" width="80" class="px-1 text-caption">
@@ -47,6 +47,7 @@ export default {
   props: ['url', 'id', 'time', 'nearsetLatLng'],
   data() {
     return {
+      isM3u8: false,
       viewer: null,
       panorama: null,
       video: null,
@@ -55,18 +56,13 @@ export default {
       progress: 0,
       disabled: false,
       step: 2,
-      video_url: null,
       current_quality: { value: -1, text: '自動' },
       qualities: [],
     }
   },
-  async mounted() {
-    try {
-      this.video_url = await this.get_video_url(this.url)
-      this.initVideoPlayer()
-    } catch (e) {
-      console.log(e)
-    }
+  mounted() {
+    this.isM3u8 = this.url.endsWith('m3u8') ? true: false
+    this.initVideoPlayer()
   },
   unmounted() {
     if (self.video) self.video.remove()
@@ -76,6 +72,7 @@ export default {
   methods: {
     async initVideoPlayer() {
       const self = this
+      const video_url = this.get_path_url(this.url)
       // Create a viewer for the panorama
       self.viewer = new Viewer({
         container: self.$refs.vp_wrap,
@@ -83,7 +80,7 @@ export default {
       })
 
       // Create a VideoPanorama with your 360-degree video
-      self.panorama = new VideoPanorama(self.video_url, {
+      self.panorama = new VideoPanorama(video_url, {
         autoplay: false, // Disable auto-play for custom control handling
       })
 
@@ -93,10 +90,10 @@ export default {
 
       // Get a reference to the video element
       const video = self.panorama.getVideoElement()
-      if (Hls.isSupported()) {
+      if (self.isM3u8 && Hls.isSupported()) {
         console.log('isSuppprted')
         const hls = new Hls()
-        hls.loadSource(self.video_url)
+        hls.loadSource(video_url)
         hls.attachMedia(video)
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
           self.qualities = [{ value: -1, text: '自動' }]
@@ -111,7 +108,7 @@ export default {
         })
         self.hls = hls
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = self.video_url
+        video.src = video_url
       }
       video.style.display = 'none'
       video.addEventListener('loadedmetadata', function (e) {
@@ -136,9 +133,13 @@ export default {
         self.capture = blob
       }, 'image/jpg')
     },
-    onPause() {
-      this.video.pause()
-      this.isPlaying = false
+    async onPause() {
+      try {
+        await this.video.pause()
+        this.isPlaying = false
+      } catch (e) {
+        console.log(e)
+      }
     },
     async onPlay() {
       try {

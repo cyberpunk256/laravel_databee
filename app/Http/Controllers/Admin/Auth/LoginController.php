@@ -30,7 +30,7 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(RouteServiceProvider::ADMIN_HOME);
+        return redirect(RouteServiceProvider::ADMIN_HOME);
     }
 
     /**

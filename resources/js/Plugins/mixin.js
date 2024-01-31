@@ -34,17 +34,8 @@ export default {
         }
       }
     },
-    async get_video_url(path) {
-      try {
-        const { data } = await axios.post(`/api/media/presigned_url`, { path: path })
-        return data.presigned_url
-      } catch (e) {
-        console.log(e)
-        return ''
-      }
-    },
     get_path_url(path) {
-      return '/api/file?path=' + path
+      return this.constant.cloudfront_domain + '/' + path
     },
     getTextOfOption(options, value) {
       const option = options.find((x) => x.value == value)

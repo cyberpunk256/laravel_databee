@@ -255,7 +255,9 @@ class MediaController extends Controller
 
     public function preview(Request $request) {
         $admin = Auth::guard('admin')->user();
-        $query = Media::query();
+        $query = Media::query()
+            ->whereIn('status', [null, 1])
+            ->whereNull('job_id');
         if($admin->role == 2) {
             $query->whereHas('admin', function ($query) use($admin) {
                 $query->where('group_id', $admin->group_id); 
