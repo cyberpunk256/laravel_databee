@@ -26,7 +26,6 @@ class IndexController extends Controller
                 $query->where('pref', $user->pref); 
             })
             ->get();
-        dd($records);
 
         return Inertia::render('Index', [
             'records' => $records
