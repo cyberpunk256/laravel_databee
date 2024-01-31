@@ -78,7 +78,6 @@ export default {
       capture_modal: false,
       // map
       bounds_sum: new L.LatLngBounds(),
-      loaded_gpxs: 0,
       gpxOptions: {
         async: true,
         marker_options: {
@@ -106,7 +105,8 @@ export default {
     const init_pos = self.user.init_lat && self.user.init_long ? 
       [self.user.init_lat, self.user.init_long] :
       self.constant.map.view
-    self.gpxOptions.polyline_options.weight = self.getLineWeightByZoom(
+    const gpxOptions = self.gpxOptions
+    gpxOptions.polyline_options.weight = self.getLineWeightByZoom(
       self.constant.map.zoom, 
       self.constant.map.gpx.weight
     )
@@ -116,9 +116,7 @@ export default {
       iconSize: [iconSize, iconSize], // Set the size of the icon
     });
 
-    console.log('this.constant.map.zoom', this.constant.map.zoom)
-
-    const map = L.map('map', map_options).setView(init_pos,this.constant.map.zoom)
+    const map = L.map('map', map_options).setView(init_pos,self.constant.map.zoom)
       .on('zoomend', self.onZoomChange);
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>',
@@ -128,39 +126,35 @@ export default {
       const record = self.records[i];
       if(record.type == 1) { // video
         const gpx_url = self.get_path_url(record.gpx_path)
-        new L.GPX(gpx_url, this.gpxOptions)
+        new L.GPX(gpx_url, self.gpxOptions)
           .on('loaded', function(e) {
-            self.onGpxLoaded(e, record)
+            self.onGpxLoaded(e, record, map)
           })
       } else if(record.type == 2 || record.type == 3) {
         const coordinate = (record.image_lat && record.image_long) ? 
-          [record.image_lat, record.image_long] : this.constant.map.pin
+          [record.image_lat, record.image_long] : self.constant.map.pin
         
         const pin_marker = L.marker(coordinate, { icon: marker_icon, draggable: true })
           .addTo(map)
           .on('click', function() {
             self.onShowModal(record)
           });
-        this.bounds_sum.extend(coordinate)
-        this.loaded_gpxs += 1
+        self.onFitBounds(map, coordinate);
       }
     }
-    this.map = map
-  },
-  watch: {
-    loaded_gpxs(new_loaded_gpxs) {
-      if(new_loaded_gpxs == this.records.length) {
-        this.map.fitBounds(this.bounds_sum);
-      }
-    },
+    self.map = map
   },
   methods: {
-    onGpxLoaded(e, record) {
+    onFitBounds(map, bounds) {
+      let mapBounds = map.getBounds();
+      mapBounds.extend(bounds);
+      map.fitBounds(mapBounds);
+    },
+    onGpxLoaded(e, record, map) {
       const self = this
       const gpxLayer = e.target;
-      this.bounds_sum.extend(gpxLayer.getBounds());
-      gpxLayer.addTo(this.map);
-      this.loaded_gpxs += 1
+      self.onFitBounds(map, gpxLayer.getBounds());
+      gpxLayer.addTo(map);
       gpxLayer.on('click', function (event) {
         const layers = gpxLayer.getLayers()
         const latlngs = layers[0].getLatLngs()
