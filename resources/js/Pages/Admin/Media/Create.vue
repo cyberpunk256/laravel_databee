@@ -59,6 +59,7 @@ export default {
     }
   },
   mounted() {
+    console.log('this.constant', this.constant)
   },
   methods: {
     onChangeTab() {

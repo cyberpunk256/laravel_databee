@@ -29,6 +29,7 @@ class UpdateMediaStatus extends Command
     public function handle(MediaConvertClient $mediaConvertClient)
     {
         try {
+            \Log::info('MediaConvertJob Run - Start');
             $bucket_name = config('filesystems.disks.s3.bucket');
             $medias = Media::query()
                 ->where('status', 0)
@@ -41,12 +42,13 @@ class UpdateMediaStatus extends Command
                     $option = $job['Job']['OutputGroupDetails'][0]["OutputDetails"][0];
                     $destination = $job['Job']['Settings']['OutputGroups'][0]['OutputGroupSettings']['HlsGroupSettings']['Destination'];
                     $full_path = $destination . ".m3u8";
-                    $abs_path = str_replace("s3://" . $bucket_name . "/", "", $full_path);  
+                    $abs_path = str_replace("s3://" . $bucket_name . "/", "", $full_path); 
+                    $duration = intval($option['DurationInMs']) / 1000;
 
                     $media->update([
                         'status' => 1, // complete
                         'media_path' => $abs_path,
-                        'video_duration' => $option['DurationInMs']
+                        'video_duration' => $duration
                     ]);
                     \Log::info('MediaConvertJob Status - COMPLETE - Media ID:' . $media->id);
                 } elseif ($jobStatus === 'ERROR') {

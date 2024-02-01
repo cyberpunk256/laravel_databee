@@ -15,10 +15,15 @@ class Kernel extends ConsoleKernel
     {
         $schedule->call(function () {
             Artisan::call('app:update-media-status');
-        })->everyTenSeconds();
+        })->everyMinute();
+        // })->everyTenSeconds();
         $schedule->call(function () {
-            Artisan::call('app:delete-media');
-        })->daily();
+            Artisan::call('queue:work');
+        })->everyMinute();
+        // })->everyTenSeconds();
+        // $schedule->call(function () {
+        //     Artisan::call('app:delete-media');
+        // })->daily();
     }
 
     /**

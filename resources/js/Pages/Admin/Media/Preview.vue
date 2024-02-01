@@ -6,7 +6,7 @@ import { Head, Link } from '@inertiajs/vue3'
 <template>
   <MapLayout>
     <template v-slot:map>
-      <div id="map" class="fix_map"></div>
+      <div id="map" ref="map" class="fix_map"></div>
     </template>
     <template v-slot:action>
       <Link href="/admin/media" as="div">
@@ -83,55 +83,67 @@ export default {
   },
   mounted() {
     const self = this
-    const map_options = {
-      maxZoom: self.constant.map.max_zoom,
-    }
-    const init_pos = self.user.init_lat && self.user.init_long ? 
-      [self.user.init_lat, self.user.init_long] :
-      self.constant.map.view
-    const gpxOptions = self.gpxOptions.polyline_options
-    gpxOptions.polyline_options.weight = self.getLineWeightByZoom(
-      self.constant.map.zoom, 
-      self.constant.map.gpx.weight
-    )
-    const iconSize = self.getMarkerSizeByZoom(self.constant.map.zoom, self.constant.map.marker.size)
-    const marker_icon = L.icon({
-      iconUrl: self.constant.map.marker.icon, // Replace with the path to your image
-      iconSize: [iconSize, iconSize], // Set the size of the icon
-    });
-    
-    const map = L.map('map', map_options).setView(init_pos, self.constant.map.zoom)
-      .on('zoomend', self.onZoomChange);
-    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>',
-      maxZoom: self.constant.map.max_zoom
-    }).addTo(map)
-    for (let i = 0; i < self.records.length; i++) {
-      const record = self.records[i];
-      if(record.type == 1) { // video
-        const gpx_url = self.get_path_url(record.gpx_path)
-        new L.GPX(gpx_url, gpxOptions)
-          .on('loaded', function(e) {
-            self.onGpxLoaded(e, map)
-          })
-          .on('click', function() {
-              self.onShowModal(record)
-          });
-      } else if(record.type == 2 || record.type == 3) {
-        const coordinate = (record.image_lat && record.image_long) ? 
-          [record.image_lat, record.image_long] : self.constant.map.pin
-        
-        const pin_marker = L.marker(coordinate, { icon: marker_icon, draggable: true })
-          .addTo(map)
-          .on('click', function() {
-            self.onShowModal(record)
-          });
-        self.onFitBounds(map, coordinate);
+    const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && self.$refs.map) {
+        self.onInit()
       }
-    }
-    self.map = map
+    }, { threshold: [1] }
+    )
+    observer.observe(this.$refs.map)
   },
   methods: {
+    onInit() {
+      const self = this
+      const map_options = {
+        maxZoom: self.constant.map.max_zoom,
+      }
+
+      const init_pos = self.user.init_lat && self.user.init_long ? 
+        [self.user.init_lat, self.user.init_long] :
+        self.constant.map.view
+      const gpxOptions = self.gpxOptions
+      gpxOptions.polyline_options.weight = self.getLineWeightByZoom(
+        self.constant.map.zoom, 
+        self.constant.map.gpx.weight
+      )
+      const iconSize = self.getMarkerSizeByZoom(self.constant.map.zoom, self.constant.map.marker.size)
+      const marker_icon = L.icon({
+        iconUrl: self.constant.map.marker.icon, // Replace with the path to your image
+        iconSize: [iconSize, iconSize], // Set the size of the icon
+      });
+      
+      const map = L.map('map', map_options).setView(init_pos, self.constant.map.zoom)
+        .on('zoomend', self.onZoomChange);
+      L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>',
+        maxZoom: self.constant.map.max_zoom
+      }).addTo(map)
+      for (let i = 0; i < self.records.length; i++) {
+        const record = self.records[i];
+        if(record.type == 1) { // video
+          const gpx_url = self.get_path_url(record.gpx_path)
+          new L.GPX(gpx_url, gpxOptions)
+            .on('loaded', function(e) {
+              self.onGpxLoaded(e, map)
+            })
+            .on('click', function() {
+                self.onShowModal(record)
+            });
+        } else if(record.type == 2 || record.type == 3) {
+          const coordinate = (record.image_lat && record.image_long) ? 
+            [record.image_lat, record.image_long] : self.constant.map.pin
+          
+          const pin_marker = L.marker(coordinate, { icon: marker_icon, draggable: true })
+            .addTo(map)
+            .on('click', function() {
+              self.onShowModal(record)
+            });
+          self.onFitBounds(map, coordinate);
+        }
+      }
+      self.map = map
+    },
     onFitBounds(map, bounds) {
       let mapBounds = map.getBounds();
       mapBounds.extend(bounds);
