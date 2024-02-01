@@ -34,7 +34,6 @@ import { Head, Link } from '@inertiajs/vue3'
         </v-col>
       </v-row>
       <v-data-table-server
-        v-model="selectedItems"
         :items="data.data"
         :items-length="data.total"
         :headers="headers"
@@ -42,8 +41,15 @@ import { Head, Link } from '@inertiajs/vue3'
         class="elevation-0"
         :loading="isLoading"
         @update:options="loadItems"
-        show-select
       >
+
+        <template #item.select="{ item }">
+          <v-checkbox
+            :model-value="selectedIds.includes(item.raw.id)"
+            @click="onToggle(item.raw.id)"
+            hide-details
+          ></v-checkbox>
+        </template>
         <template #[`item.admin_name`]="{ item }">
           {{ item.raw.admin.name }}
         </template>
@@ -75,7 +81,7 @@ import { Head, Link } from '@inertiajs/vue3'
         <template #bottom="{ item }">
           <v-row>
             <v-col cols="auto">
-              <v-btn :disabled="selectedItems.length = 0" @click="onRemoveConfirm" color="red" hide-details>選択したメディを削除</v-btn>
+              <v-btn :disabled="selectedIds.length = 0" @click="onRemoveConfirm" color="red" hide-details>選択したメディを削除</v-btn>
             </v-col>
             <v-spacer></v-spacer>
             <v-col cols="auto">
@@ -115,6 +121,7 @@ export default {
   data() {
     return {
       headers: [
+        { title: '', key: 'select', sortable: false },
         { title: 'ID', key: 'id', sortable: false },
         { title: 'メディア名', key: 'name', sortable: false },
         { title: '投稿者', key: 'admin_name', sortable: false },
@@ -132,7 +139,8 @@ export default {
       ],
       isLoading: false,
       search: null,
-      selectedItems: [],
+      selectedIds: [],
+      others: [],
       deleteDialog: false,
     }
   },
@@ -173,15 +181,24 @@ export default {
       this.deleteDialog = true
     },
     onRemoveSelected() {
+      this.deleteDialog = false
+      const self = this
       this.$inertia.post(`/admin/media/delete_records`, {
-        ids: this.selectedItems
+        ids: self.selectedIds
       }, {
         onFinish: () => {
           self.isLoading = false
           self.show_toast();
         }
       })
-    }
+    },
+    onToggle(value) {
+      if(this.selectedIds.indexOf(value) === -1) {
+        this.selectedIds.push(value)
+      } else {
+        this.selectedIds.splice(this.selectedIds.indexOf(value), 1)
+      }
+    },
   },
 }
 </script>
