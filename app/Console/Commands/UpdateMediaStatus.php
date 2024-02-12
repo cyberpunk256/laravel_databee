@@ -58,6 +58,7 @@ class UpdateMediaStatus extends Command
                     \Log::info('MediaConvertJob Status - ERROR - Media ID:' . $media->id);
                 }
             }
+            \Log::info('MediaConvertJob Run - END');
         } catch (\Throwable $exception) {
             \Log::error($exception);
         }
