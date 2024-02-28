@@ -17,9 +17,6 @@ class Kernel extends ConsoleKernel
             Artisan::call('app:update-media-status');
         })->everyMinute();
         // })->everyTenSeconds();
-        $schedule->call(function () {
-            Artisan::call('queue:work');
-        })->everyMinute();
         // })->everyTenSeconds();
         // $schedule->call(function () {
         //     Artisan::call('app:delete-media');
