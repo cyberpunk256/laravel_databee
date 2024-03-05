@@ -21,9 +21,6 @@ import { Head, Link } from '@inertiajs/vue3'
           single-line
         />
         <v-spacer />
-        <Link href="/admin/capture/create" as="div">
-          <v-btn color="primary">新規登録</v-btn>
-        </Link>
       </div>
       <v-data-table-server
         :items="data.data"
