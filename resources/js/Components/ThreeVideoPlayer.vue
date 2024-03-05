@@ -28,8 +28,8 @@
             </v-list>
           </v-menu>
         </v-col>
-        <v-col v-if="capture" cols="auto" class="pa-2">
-          <v-btn icon="mdi-record" @click="onCapture"></v-btn>
+        <v-col cols="auto" class="pa-2">
+          <v-btn icon="mdi-record" density="comfortable" @click="onCapture"></v-btn>
         </v-col>
       </v-row>
       <div class="vp_progress mt-2">
@@ -169,7 +169,6 @@ export default {
     },
     async onCapture() {
       const self = this
-      if (!this.capture) return
       try {
         self.is_capturing = true
         const formData = new FormData()
