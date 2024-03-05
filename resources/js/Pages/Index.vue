@@ -6,7 +6,7 @@ import { Head, Link } from '@inertiajs/vue3'
 <template>
   <MapLayout>
     <template v-slot:map>
-      <div id="map" ref="map" class="fix_map"></div>
+      <div id="map" class="fix_map"></div>
     </template>
     <template v-slot:action>
       <v-btn @click="onShowCaptures" icon="mdi-cart" size="large"></v-btn>

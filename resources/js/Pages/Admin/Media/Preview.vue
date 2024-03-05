@@ -6,7 +6,7 @@ import { Head, Link } from '@inertiajs/vue3'
 <template>
   <MapLayout>
     <template v-slot:map>
-      <div id="map" ref="map" class="fix_map"></div>
+      <div id="map" class="fix_map"></div>
     </template>
     <template v-slot:action>
       <Link href="/admin/media" as="div">
@@ -83,14 +83,15 @@ export default {
   },
   mounted() {
     const self = this
+    map = document.querySelector("#map");
     const observer = new IntersectionObserver(
     (entries) => {
-      if (entries[0].isIntersecting && self.$refs.map) {
+      if (entries[0].isIntersecting && map) {
         self.onInit()
       }
     }, { threshold: [1] }
     )
-    observer.observe(this.$refs.map)
+    observer.observe(map)
   },
   methods: {
     onInit() {
