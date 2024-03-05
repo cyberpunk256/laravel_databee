@@ -83,7 +83,7 @@ export default {
   },
   mounted() {
     const self = this
-    map = document.querySelector("#map");
+    const map = document.querySelector("#map");
     const observer = new IntersectionObserver(
     (entries) => {
       if (entries[0].isIntersecting && map) {

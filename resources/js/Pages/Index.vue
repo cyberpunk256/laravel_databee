@@ -99,14 +99,15 @@ export default {
   },
   mounted() {
     const self = this
+    const map = document.querySelector("#map");
     const observer = new IntersectionObserver(
     (entries) => {
-      if (entries[0].isIntersecting && self.$refs.map) {
+      if (entries[0].isIntersecting && map) {
         self.onInit()
       }
     }, { threshold: [1] }
     )
-    observer.observe(this.$refs.map)
+    observer.observe(map)
   },
   methods: {
     onInit() {
