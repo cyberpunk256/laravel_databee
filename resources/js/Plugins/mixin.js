@@ -88,7 +88,7 @@ export default {
     getLineWeightByZoom(zoom, value) {
       console.log('zoom', zoom)
       console.log('value', value)
-      const calc_value = value * Math.pow(2, zoom - 18)
+      const calc_value = value * Math.pow(2, zoom - 30)
       return calc_value > 5 ? calc_value : 5
     },
   },

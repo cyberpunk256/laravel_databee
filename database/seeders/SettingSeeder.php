@@ -24,7 +24,7 @@ class SettingSeeder extends Seeder
             ],
             [
                 'key' => 'map_max_zoom',
-                'value' => 20,
+                'value' => 30,
             ],
             [
                 'key' => 's3_upload_folder',
